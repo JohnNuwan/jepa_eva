@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Artefacts lourds (régénérables via train_jepa.py / precompute_latents.py)
+# Décommenter pour exclure les poids/latents du dépôt :
+# checkpoints_jepa/*.pt
+# latents/*.npz
+
+# Journaux runtime
+logs/
+*.log
+disjoncteur_journal.jsonl
+
+# OS / éditeurs
+.DS_Store
+*.swp
