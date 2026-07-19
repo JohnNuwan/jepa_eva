@@ -22,8 +22,10 @@ import signal
 import sys
 import time
 from dataclasses import dataclass
+from pathlib import Path
 
 import jax
+import jax.numpy as jnp
 import numpy as np
 import torch
 
@@ -34,6 +36,7 @@ from action_sanitizer import (
 )
 from jax_arena import (
     DIM_ACTION,
+    ParametresWorldModel,
     TDMPC2Planner,
     bridge_pytorch_to_jax,
     initialiser_world_model,
@@ -109,12 +112,19 @@ class OrchestrateurEVA:
         self,
         device_pipeline: str = "cuda:0",
         chemin_journal_disjoncteur: str = "logs/disjoncteur.jsonl",
+        checkpoint_jepa: str = "checkpoints_jepa/jepa_final_XAUUSD_m15.pt",
+        world_model: str = "checkpoints_wm/world_model_XAUUSD_m15.npz",
     ) -> None:
         """Construit la chaîne complète et place chaque bloc sur son GPU.
+
+        Charge l'encodeur JEPA pré-entraîné et le world model entraîné si
+        disponibles (sinon poids aléatoires avec avertissement).
 
         Args:
             device_pipeline: Device PyTorch de l'encodeur (GPU 0).
             chemin_journal_disjoncteur: Fichier JSONL du disjoncteur.
+            checkpoint_jepa: Checkpoint de l'encodeur JEPA entraîné.
+            world_model: Poids du world model GRU entraîné.
 
         Raises:
             RuntimeError: Si aucun GPU JAX n'est disponible.
@@ -124,8 +134,28 @@ class OrchestrateurEVA:
             raise RuntimeError("GPU JAX requis pour l'orchestrateur")
         self.device_jax = gpus[-1]
         self.pipeline = JEPAPipeline(device=device_pipeline)
-        cle = jax.random.PRNGKey(0)
-        self.planner = TDMPC2Planner(initialiser_world_model(cle))
+
+        # Encodeur JEPA pré-entraîné.
+        if Path(checkpoint_jepa).is_file():
+            ckpt = torch.load(checkpoint_jepa, map_location=device_pipeline, weights_only=False)
+            self.pipeline.modele.encodeur_online.load_state_dict(ckpt["encodeur"])
+            self.pipeline.normalisateur.load_state_dict(ckpt["normalisateur"])
+            self.pipeline.modele.eval()
+            journal.info("Encodeur JEPA chargé (perte=%.5f)", ckpt.get("perte_finale", float("nan")))
+        else:
+            journal.warning("Checkpoint JEPA absent (%s) — encodeur ALÉATOIRE", checkpoint_jepa)
+
+        # World model entraîné pour le CEM.
+        if Path(world_model).is_file():
+            donnees = np.load(world_model)
+            feuilles = [jnp.asarray(donnees[f"p{i}"]) for i in range(6)]
+            params_wm = ParametresWorldModel(*feuilles)
+            journal.info("World model entraîné chargé : %s", world_model)
+        else:
+            params_wm = initialiser_world_model(jax.random.PRNGKey(0))
+            journal.warning("World model absent (%s) — CEM ALÉATOIRE", world_model)
+        self.planner = TDMPC2Planner(params_wm)
+
         self.sanitizer = ActionSanitizer()
         self.disjoncteur = DrawdownDisconnector(
             chemin_journal=chemin_journal_disjoncteur
