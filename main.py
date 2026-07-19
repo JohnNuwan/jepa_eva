@@ -55,6 +55,30 @@ PERIODE_SEC: float = 1.0
 PRIX_REFERENCE: float = 2000.0
 DISTANCE_SL: float = 5.0
 EQUITY_REFERENCE: float = 100_000.0
+MULTIPLICATEUR_ATR_SL: float = 2.0  # SL = 2 × ATR (volatilité réelle)
+
+
+def calculer_atr(ohlcv: torch.Tensor, periode: int = 14) -> float:
+    """Calcule l'Average True Range sur la fenêtre courante.
+
+    L'ATR mesure la volatilité réelle de l'actif : le stop loss s'en inspire
+    (SL = multiplicateur × ATR) pour éviter d'être stoppé par le bruit.
+
+    Args:
+        ohlcv: Tenseur ``(1, T, 5)`` avec canaux [O, H, L, C, V].
+        periode: Période de lissage ATR.
+
+    Returns:
+        ATR en points de prix (float).
+    """
+    haut = ohlcv[0, :, 1]
+    bas = ohlcv[0, :, 2]
+    cloture_prec = torch.cat([ohlcv[0, :1, 3], ohlcv[0, :-1, 3]])
+    tr = torch.maximum(
+        haut - bas,
+        torch.maximum((haut - cloture_prec).abs(), (bas - cloture_prec).abs()),
+    )
+    return float(tr[-periode:].mean())
 
 
 @dataclass
@@ -213,11 +237,15 @@ class OrchestrateurEVA:
         if signal.size < DIM_ACTION:
             raise ValueError(f"signal {signal.shape} trop court")
 
+        # SL basé sur l'ATR (volatilité réelle) plutôt que fixe : évite les
+        # stops prématurés par le bruit sur XAUUSD M15 (ATR ~5-15$).
+        atr = calculer_atr(ohlcv)
+        distance_sl = max(atr * MULTIPLICATEUR_ATR_SL, 1.0)
         ordre = self.sanitizer.sanitiser(
             signal=signal,
             equity=EQUITY_REFERENCE,
             prix=prix_actuel,
-            distance_sl=DISTANCE_SL,
+            distance_sl=distance_sl,
         )
         if ordre.direction != 0 and ordre.lot >= self.sanitizer.limites.lot_min:
             self._emettre_ordre(ordre)
