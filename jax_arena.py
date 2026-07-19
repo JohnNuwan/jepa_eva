@@ -384,9 +384,14 @@ class EtatSimulation(NamedTuple):
     Attributes:
         cash: Equity courante.
         position: Position signée courante ∈ [-1, 1].
-        prix_entree: Prix d'entrée de la position courante.
+        prix_entree: Prix de la barre précédente (mark-to-market).
         equity_peak: Plus-haut historique de l'equity.
         historique_retours: Fenêtre glissante des retours ``(fenetre,)``.
+        nb_trades: Nombre de trades fermés (changement de signe effectif).
+        trades_gagnants: Nombre de trades fermés en profit.
+        profit_brut: Somme des gains des trades gagnants.
+        perte_brute: Somme des pertes des trades perdants (valeur positive).
+        pnl_trade_courant: P&L accumulé du trade en cours.
     """
 
     cash: Array
@@ -394,6 +399,11 @@ class EtatSimulation(NamedTuple):
     prix_entree: Array
     equity_peak: Array
     historique_retours: Array
+    nb_trades: Array
+    trades_gagnants: Array
+    profit_brut: Array
+    perte_brute: Array
+    pnl_trade_courant: Array
 
 
 class ResultatEvaluation(NamedTuple):
@@ -403,13 +413,19 @@ class ResultatEvaluation(NamedTuple):
         fitness: ``(pop,)`` = (Sortino × 2) − MaxDrawdown + NetProfit.
         net_profit: ``(pop,)`` profit net en % du capital initial.
         max_drawdown: ``(pop,)`` drawdown maximal en %.
-        sortino: ``(pop,)`` ratio de Sortino annualisé.
+        sortino: ``(pop,)`` ratio de Sortino.
+        win_rate: ``(pop,)`` taux de trades gagnants en %.
+        profit_factor: ``(pop,)`` profit_brut / perte_brute.
+        nb_trades: ``(pop,)`` nombre de trades fermés.
     """
 
     fitness: Array
     net_profit: Array
     max_drawdown: Array
     sortino: Array
+    win_rate: Array
+    profit_factor: Array
+    nb_trades: Array
 
 
 def initialiser_population(
@@ -466,22 +482,46 @@ def _pas_simulation(
     variation = signal - etat.position
     cout = jnp.abs(variation) * COUT_TRANSACTION
     # Rendement par barre réaliste : position × variation relative du prix
-    # depuis la barre PRÉCÉDENTE (pas depuis l'entrée). Cela borne le retour
-    # à la volatilité barre-à-barre (réaliste) au lieu d'une composition
-    # explosive du drift (artefact de levier non borné).
+    # depuis la barre PRÉCÉDENTE (mark-to-market) — rendements bornés.
     prix_precedent = jnp.maximum(etat.prix_entree, EPS)
     rendement_prix = (prix - prix_precedent) / prix_precedent
     retour_net = etat.position * rendement_prix - cout
     nouveau_cash = etat.cash * (1.0 + retour_net)
     historique = jnp.roll(etat.historique_retours, shift=-1)
     historique = historique.at[-1].set(retour_net)
+
+    # --- Suivi des trades discrets -----------------------------------------
+    # Un trade est "fermé" quand la position repasse par zéro ou change de
+    # signe (passage long->short ou inverse). On accumule le P&L du trade.
+    pnl_trade = etat.pnl_trade_courant + retour_net
+    changement_signe = (
+        (etat.position != 0.0)
+        & (signal != 0.0)
+        & (jnp.sign(signal) != jnp.sign(etat.position))
+    )
+    retour_neutre = (etat.position != 0.0) & (signal == 0.0)
+    trade_ferme = changement_signe | retour_neutre
+
+    nouveau_nb_trades = etat.nb_trades + trade_ferme.astype(jnp.float32)
+    gagne = trade_ferme & (pnl_trade > 0.0)
+    perd = trade_ferme & (pnl_trade <= 0.0)
+    nouveau_gagnants = etat.trades_gagnants + gagne.astype(jnp.float32)
+    nouveau_profit = etat.profit_brut + jnp.where(gagne, pnl_trade, 0.0)
+    nouvelle_perte = etat.perte_brute + jnp.where(perd, -pnl_trade, 0.0)
+    # Le P&L du trade repart à zéro à la fermeture, sinon s'accumule.
+    nouveau_pnl_trade = jnp.where(trade_ferme, 0.0, pnl_trade)
+
     nouvel_etat = EtatSimulation(
         cash=nouveau_cash,
         position=signal,
-        # prix_entree mémorise le prix de la barre précédente (mark-to-market).
-        prix_entree=prix,
+        prix_entree=prix,  # mark-to-market : barre précédente
         equity_peak=jnp.maximum(etat.equity_peak, nouveau_cash),
         historique_retours=historique,
+        nb_trades=nouveau_nb_trades,
+        trades_gagnants=nouveau_gagnants,
+        profit_brut=nouveau_profit,
+        perte_brute=nouvelle_perte,
+        pnl_trade_courant=nouveau_pnl_trade,
     )
     return nouvel_etat, retour_net
 
@@ -514,11 +554,24 @@ def _calculer_fitness(
     max_dd_pct = drawdown * 100.0
     net_profit = (etat_final.cash - capital_initial) / capital_initial * 100.0
     fitness = (sortino * 2.0) - max_dd_pct + net_profit
+    # Trades discrets : win_rate et profit factor.
+    nb_trades = etat_final.nb_trades
+    win_rate = jnp.where(
+        nb_trades > 0.0,
+        etat_final.trades_gagnants / jnp.maximum(nb_trades, 1.0) * 100.0,
+        0.0,
+    )
+    profit_factor = etat_final.profit_brut / jnp.maximum(
+        etat_final.perte_brute, 1e-9
+    )
     return ResultatEvaluation(
         fitness=fitness,
         net_profit=net_profit,
         max_drawdown=max_dd_pct,
         sortino=sortino,
+        win_rate=win_rate,
+        profit_factor=profit_factor,
+        nb_trades=nb_trades,
     )
 
 
@@ -583,13 +636,19 @@ class JaxGeneticArena:
                 ``ResultatEvaluation`` scalaire pour cet agent.
             """
             prix_seq, latents_seq = donnees
+            zero = jnp.asarray(0.0, dtype=jnp.float32)
             etat0 = EtatSimulation(
                 cash=jnp.asarray(capital, dtype=jnp.float32),
-                position=jnp.asarray(0.0, dtype=jnp.float32),
+                position=zero,
                 # mark-to-market : démarre au premier prix du segment.
                 prix_entree=prix_seq[0],
                 equity_peak=jnp.asarray(capital, dtype=jnp.float32),
                 historique_retours=jnp.zeros(fenetre, dtype=jnp.float32),
+                nb_trades=zero,
+                trades_gagnants=zero,
+                profit_brut=zero,
+                perte_brute=zero,
+                pnl_trade_courant=zero,
             )
 
             def corps(

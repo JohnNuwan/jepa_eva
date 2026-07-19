@@ -25,7 +25,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from jax_arena import JaxGeneticArena, ResultatEvaluation
+from jax_arena import JaxGeneticArena, ParametresWorldModel, ResultatEvaluation
 
 logging.basicConfig(
     level=logging.INFO,
@@ -114,28 +114,55 @@ class ChampionRegistry:
 
 
 def metriques_depuis_resultat(res: ResultatEvaluation, idx: int) -> dict[str, float]:
-    """Extrait les métriques d'un agent depuis le résultat vectorisé.
+    """Extrait les métriques réelles d'un agent depuis le résultat vectorisé.
 
     Args:
         res: ``ResultatEvaluation`` de toute la population.
         idx: Indice de l'agent.
 
     Returns:
-        Dictionnaire de métriques scalaires. ``win_rate``, ``profit_factor``
-        et ``nb_trades`` sont approximés depuis les retours (l'arène ne suit
-        pas les trades individuels) — à affiner avec un suivi des trades.
+        Dictionnaire de métriques scalaires incluant ``win_rate``,
+        ``profit_factor`` et ``nb_trades`` (trades discrets suivis par l'arène).
     """
-    # Approximation : win_rate/profit_factor non suivis par l'arène actuelle.
-    # On retourne les métriques disponibles + valeurs neutres pour le registry.
     return {
         "fitness": float(res.fitness[idx]),
         "net_profit": float(res.net_profit[idx]),
         "drawdown": float(res.max_drawdown[idx]),
         "sortino": float(res.sortino[idx]),
-        "win_rate": 0.0,  # non suivi (cf. note ci-dessus)
-        "profit_factor": 0.0,
-        "nb_trades": 0,
+        "win_rate": float(res.win_rate[idx]),
+        "profit_factor": float(res.profit_factor[idx]),
+        "nb_trades": float(res.nb_trades[idx]),
     }
+
+
+def sauvegarder_champion(
+    population: ParametresWorldModel,
+    idx: int,
+    generation: int,
+    dossier: Path,
+    metriques: dict[str, float],
+) -> Path:
+    """Sauvegarde les poids Pytree d'un champion en ``.npz``.
+
+    Args:
+        population: Pytree de toute la population (dimension pop en tête).
+        idx: Indice du champion dans la population.
+        generation: Numéro de génération.
+        dossier: Dossier de destination.
+        metriques: Métriques du champion (incluses dans le fichier).
+
+    Returns:
+        Chemin du fichier sauvegardé.
+    """
+    dossier.mkdir(parents=True, exist_ok=True)
+    poids = jax.tree.map(lambda p: np.asarray(p[idx]), population)
+    aplati, _ = jax.tree.flatten(poids)
+    donnees = {f"p{i}": np.asarray(f) for i, f in enumerate(aplati)}
+    donnees["generation"] = np.asarray(generation)
+    donnees["fitness"] = np.asarray(metriques["fitness"])
+    chemin = dossier / f"champion_gen{generation}.npz"
+    np.savez_compressed(chemin, **donnees)
+    return chemin
 
 
 def entrainer(args: argparse.Namespace) -> None:
@@ -184,12 +211,24 @@ def entrainer(args: argparse.Namespace) -> None:
         if fitness_best > meilleur_fitness:
             meilleur_fitness = fitness_best
             metriques = metriques_depuis_resultat(res, idx_best)
-            # Promotion sur critères (win_rate/pf non suivis -> fitness+dd).
-            if metriques["drawdown"] <= registry.MAX_DRAWDOWN:
+            # Promotion multi-critères complète (Pattern #15) OU critère de
+            # repli fitness+DD si pas assez de trades sur le segment.
+            if registry.promotion_digne(metriques) or (
+                metriques["drawdown"] <= registry.MAX_DRAWDOWN
+                and metriques["nb_trades"] < registry.MIN_TRADES
+            ):
                 registry.enregistrer(gen, metriques)
+                chemin_champ = sauvegarder_champion(
+                    arene.population, idx_best, gen,
+                    Path(args.sortie) / "champions", metriques,
+                )
                 journal.info(
-                    "  ★ gen %d : champion fitness=%.3f dd=%.2f%% np=%.2f%%",
-                    gen, fitness_best, metriques["drawdown"], metriques["net_profit"],
+                    "  ★ gen %d : fitness=%.3f wr=%.1f%% pf=%.2f dd=%.2f%% "
+                    "np=%.2f%% trades=%d -> %s",
+                    gen, fitness_best, metriques["win_rate"],
+                    metriques["profit_factor"], metriques["drawdown"],
+                    metriques["net_profit"], int(metriques["nb_trades"]),
+                    chemin_champ.name,
                 )
 
         arene.evoluer(res.fitness, jax.random.PRNGKey(1000 + gen), nb_elites=args.nb_elites)
