@@ -22,3 +22,6 @@ disjoncteur_journal.jsonl
 # Champions d'arène (régénérables via train_arena.py)
 registry_arena/champions/
 registry_arena_validated/champions/
+checkpoints_wm/
+registry_arena_generalisee/champions/
+data
