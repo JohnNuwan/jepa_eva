@@ -396,7 +396,7 @@ class DrawdownDisconnector:
         entree = {
             "horodatage": time.strftime("%Y-%m-%dT%H:%M:%S"),
             "message": message,
-            "perte_pct": round(perte_pct, 4),
+            "perte_pct": float(round(perte_pct, 4)),
             "positions_fermees": tickets,
             "penalite_fitness": PENALITE_FITNESS,
         }

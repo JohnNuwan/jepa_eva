@@ -1,0 +1,5 @@
+{"horodatage": "2026-07-31T09:00:23", "generation": 0, "fitness": 0.3146, "net_profit": 0.3328, "drawdown": 0.167, "sortino": 0.0744, "win_rate": 66.6667, "profit_factor": 1.627, "nb_trades": 3.0}
+{"horodatage": "2026-07-31T09:00:28", "generation": 1, "fitness": 1.961, "net_profit": 1.6862, "drawdown": 0.074, "sortino": 0.1744, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
+{"horodatage": "2026-07-31T09:00:28", "generation": 3, "fitness": 2.0674, "net_profit": 2.0222, "drawdown": 0.2318, "sortino": 0.1385, "win_rate": 100.0, "profit_factor": 148157.5312, "nb_trades": 2.0}
+{"horodatage": "2026-07-31T09:00:28", "generation": 11, "fitness": 13.2902, "net_profit": 13.0271, "drawdown": 0.0, "sortino": 0.1316, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
+{"horodatage": "2026-07-31T09:00:35", "generation": 114, "fitness": 20.3004, "net_profit": 20.7241, "drawdown": 0.8179, "sortino": 0.1971, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
