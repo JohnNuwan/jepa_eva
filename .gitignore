@@ -1,27 +1,24 @@
-# Python
+# Checkpoints et poids
+*.pt
+*.npz
+*.pth
+*.bin
+*.safetensors
+# Databases
+*.db
+*.sqlite
+# Logs
+*.log
+logs/
+# Env
+.env
 __pycache__/
-*.py[cod]
-*.egg-info/
+*.pyc
 .venv/
 venv/
-
-# Artefacts lourds (régénérables via train_jepa.py / precompute_latents.py)
-# Décommenter pour exclure les poids/latents du dépôt :
-# checkpoints_jepa/*.pt
-# latents/*.npz
-
-# Journaux runtime
-logs/
-*.log
-disjoncteur_journal.jsonl
-
-# OS / éditeurs
+# IDE
+.vscode/
+.idea/
+# OS
 .DS_Store
-*.swp
-
-# Champions d'arène (régénérables via train_arena.py)
-registry_arena/champions/
-registry_arena_validated/champions/
-checkpoints_wm/
-registry_arena_generalisee/champions/
-data
+Thumbs.db
