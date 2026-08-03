@@ -16,6 +16,7 @@ Exécution : PYTHONPATH=. venv/bin/python main.py
 """
 
 from __future__ import annotations
+import json
 
 import logging
 import signal
@@ -101,7 +102,7 @@ class EtatOrchestrateur:
 
 def flux_marche_reel(longueur: int, symbole: str = "XAUUSD"):
     """Recupere les vraies donnees OHLCV depuis le MT5 Bridge."""
-    import urllib.request, json, logging
+    import urllib.request
     try:
         url = "http://192.168.1.6:8765/ohlcv/" + symbole + "/" + str(longueur) + "/M15"
         with urllib.request.urlopen(url, timeout=5) as r:
@@ -202,18 +203,53 @@ class OrchestrateurEVA:
         """Transmet l'ordre validé au MT5 Bridge."""
         self.etat.ordres_emis += 1
         
-        # Verifier nombre de positions ouvertes
+        # Gestion intelligente des positions multiples
+        MAX_POS = 3  # max positions par symbole
+        DAILY_TARGET = 200.0  # objectif journalier en euros
+        
         try:
             positions = self.connecteur.positions()
             pos_sym = [p for p in positions if p.get("symbol") == self.symbole]
             buys = [p for p in pos_sym if p.get("type") == "BUY"]
             sells = [p for p in pos_sym if p.get("type") == "SELL"]
-            if ordre.direction > 0 and len(buys) >= 1:
-                journal.info("Deja %d BUY %s - ordre ignore", len(buys), self.symbole)
+            existing = buys if ordre.direction > 0 else sells
+            
+            # Verifier limite de positions
+            if len(existing) >= MAX_POS:
+                journal.info("Max %d %s %s atteint - ordre ignore", MAX_POS, 
+                    "BUY" if ordre.direction > 0 else "SELL", self.symbole)
                 return
-            if ordre.direction < 0 and len(sells) >= 1:
-                journal.info("Deja %d SELL %s - ordre ignore", len(sells), self.symbole)
-                return
+            
+            # Position #2+ seulement si la 1ere est en profit
+            if len(existing) >= 1:
+                profit_total = sum(p.get("profit", 0) for p in existing)
+                if profit_total < 5.0:
+                    journal.info("Position #%d %s pas assez profitable (%.2f$) - attente",
+                        len(existing)+1, self.symbole, profit_total)
+                    return
+                journal.info("Position #%d %s autorisee (profit=%.2f$)", 
+                    len(existing)+1, self.symbole, profit_total)
+            
+            # Verifier le profit journalier total
+            try:
+                import urllib.request
+                req = urllib.request.Request("http://192.168.1.6:8765/history?days=1")
+                with urllib.request.urlopen(req, timeout=3) as r:
+                    hist = json.loads(r.read().decode())
+                daily_profit = sum(d.get("profit", 0) for d in hist.get("deals", []))
+                
+                if daily_profit >= DAILY_TARGET:
+                    journal.info("Objectif %.0f$ atteint (%.2f$) - lots reduits a 0.02", 
+                        DAILY_TARGET, daily_profit)
+                    ordre = OrdreValide(ordre.direction, 0.02, 
+                        ordre.stop_loss, ordre.take_profit, ordre.conforme, ordre.raison)
+                elif daily_profit > 100 and ordre.lot > 0.02:
+                    journal.info("Profit journalier %.2f$ > 100$ - lot reduit de moitie", daily_profit)
+                    ordre = OrdreValide(ordre.direction, max(ordre.lot / 2, 0.02), 
+                        ordre.stop_loss, ordre.take_profit, ordre.conforme, ordre.raison)
+            except Exception as e:
+                journal.warning("Erreur verification daily P/L: %s", e)
+                
         except Exception as e:
             journal.warning("Erreur verification positions: %s", e)
         
@@ -223,7 +259,13 @@ class OrchestrateurEVA:
             if tick and tick.bid > 0:
                 est_achat = ordre.direction > 0
                 prix = tick.ask if est_achat else tick.bid
-                lot = min(ordre.lot, 0.10)
+                # Lots adaptes par symbole (risque ~0.3-0.5% par trade)
+                LOT_MAX_PAR_SYMBOLE = {
+                    EURUSD: 0.10, GBPUSD: 0.10,
+                    US30.cash: 0.05, US500.cash: 0.05, US100.cash: 0.05,
+                    XAUUSD: 0.02, GER40.cash: 0.05
+                }
+                lot = min(ordre.lot, LOT_MAX_PAR_SYMBOLE.get(self.symbole, 0.05))
                 dist_sl = max(prix * 0.01, prix * 0.001)  # 1% min, 0.1% pour forex
                 dist_tp = max(prix * 0.02, prix * 0.002)  # 2% min, 0.2% pour forex
                 sl = round(prix - dist_sl, 2) if est_achat else round(prix + dist_sl, 2)
