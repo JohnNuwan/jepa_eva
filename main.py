@@ -16,6 +16,7 @@ Exécution : PYTHONPATH=. venv/bin/python main.py
 """
 
 from __future__ import annotations
+from datetime import datetime
 import json
 
 import logging
@@ -204,7 +205,7 @@ class OrchestrateurEVA:
         self.etat.ordres_emis += 1
         
         # Gestion intelligente des positions multiples
-        MAX_POS = 3  # max positions par symbole
+        MAX_POS = 5  # max positions par symbole
         DAILY_TARGET = 200.0  # objectif journalier en euros
         
         try:
@@ -230,13 +231,22 @@ class OrchestrateurEVA:
                 journal.info("Position #%d %s autorisee (profit=%.2f$)", 
                     len(existing)+1, self.symbole, profit_total)
             
-            # Verifier le profit journalier total
+            # Anti-hedge: verifie chaque position opposee individuellement
+            opposite = sells if ordre.direction > 0 else buys
+            for p_opp in opposite:
+                if p_opp.get("profit", 0) < 5.0:
+                    journal.info("Hedge bloque: position opposee %s non securisee (profit=%.2f$)",
+                        self.symbole, p_opp.get("profit", 0))
+                    return
+            
+        # Verifier le profit journalier total
             try:
                 import urllib.request
-                req = urllib.request.Request("http://192.168.1.6:8765/history?days=1")
+                req = urllib.request.Request("http://192.168.1.6:8765/history")
                 with urllib.request.urlopen(req, timeout=3) as r:
                     hist = json.loads(r.read().decode())
-                daily_profit = sum(d.get("profit", 0) for d in hist.get("deals", []))
+                today = datetime.now().strftime("%Y-%m-%d")
+                daily_profit = sum(d.get("profit", 0) for d in hist.get("deals", []) if today in d.get("close_time", ""))
                 
                 if daily_profit >= DAILY_TARGET:
                     journal.info("Objectif %.0f$ atteint (%.2f$) - lots reduits a 0.02", 
@@ -261,13 +271,19 @@ class OrchestrateurEVA:
                 prix = tick.ask if est_achat else tick.bid
                 # Lots adaptes par symbole (risque ~0.3-0.5% par trade)
                 LOT_MAX_PAR_SYMBOLE = {
-                    EURUSD: 0.10, GBPUSD: 0.10,
-                    US30.cash: 0.05, US500.cash: 0.05, US100.cash: 0.05,
-                    XAUUSD: 0.02, GER40.cash: 0.05
+                    "EURUSD": 0.10, "GBPUSD": 0.10, "USDJPY": 0.10,
+                    "US30.cash": 0.10, "US500.cash": 0.10, "US100.cash": 0.10,
+                    "XAUUSD": 0.05, "GER40.cash": 0.10
                 }
                 lot = min(ordre.lot, LOT_MAX_PAR_SYMBOLE.get(self.symbole, 0.05))
-                dist_sl = max(prix * 0.01, prix * 0.001)  # 1% min, 0.1% pour forex
-                dist_tp = max(prix * 0.02, prix * 0.002)  # 2% min, 0.2% pour forex
+                SL_DIST = {
+                    "EURUSD": 0.0015, "GBPUSD": 0.0015, "USDJPY": 0.20, "USDJPY.cash": 0.20,
+                    "XAUUSD": 5.0, "XAGUSD": 0.50,
+                    "US30.cash": 150.0, "US100.cash": 200.0, "US500.cash": 30.0,
+                    "GER40.cash": 80.0, "FRA40.cash": 60.0,
+                }
+                dist_sl = SL_DIST.get(self.symbole, prix * 0.01)
+                dist_tp = dist_sl * 4  # 4x SL pour laisser le split se faire
                 sl = round(prix - dist_sl, 2) if est_achat else round(prix + dist_sl, 2)
                 tp = round(prix + dist_tp, 2) if est_achat else round(prix - dist_tp, 2)
                 ordre = OrdreValide(ordre.direction, lot, sl, tp, ordre.conforme, ordre.raison)
