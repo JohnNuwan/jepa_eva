@@ -5,7 +5,7 @@ GPU 0 libre la nuit - 24GB VRAM
 """
 import sys, os, json, torch
 os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
-# from datasets import load_dataset, concatenate_datasets, Dataset  # unused
+from datasets import load_dataset, concatenate_datasets, Dataset
 from transformers import (
     AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig,
     TrainingArguments, set_seed

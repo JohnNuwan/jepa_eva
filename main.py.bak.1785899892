@@ -15,7 +15,7 @@ Conforme PEP 8 / PEP 484 / PEP 257 (docstrings Google en français).
 Exécution : PYTHONPATH=. venv/bin/python main.py
 """
 
-# from __future__ import annotations  # unused
+from __future__ import annotations
 from datetime import datetime
 import json
 
@@ -224,7 +224,7 @@ class OrchestrateurEVA:
             # Position #2+ seulement si la 1ere est en profit
             if len(existing) >= 1:
                 profit_total = sum(p.get("profit", 0) for p in existing)
-                if profit_total < 1.0:
+                if profit_total < 5.0:
                     journal.info("Position #%d %s pas assez profitable (%.2f$) - attente",
                         len(existing)+1, self.symbole, profit_total)
                     return
@@ -277,10 +277,10 @@ class OrchestrateurEVA:
                 }
                 lot = min(ordre.lot, LOT_MAX_PAR_SYMBOLE.get(self.symbole, 0.05))
                 SL_DIST = {
-                    "EURUSD": 0.0050, "GBPUSD": 0.0050, "USDJPY": 0.80, "USDJPY.cash": 0.80,
-                    "XAUUSD": 12.0, "XAGUSD": 1.50,
-                    "US30.cash": 500.0, "US100.cash": 600.0, "US500.cash": 100.0,
-                    "GER40.cash": 300.0, "FRA40.cash": 200.0,
+                    "EURUSD": 0.0015, "GBPUSD": 0.0015, "USDJPY": 0.20, "USDJPY.cash": 0.20,
+                    "XAUUSD": 5.0, "XAGUSD": 0.50,
+                    "US30.cash": 150.0, "US100.cash": 200.0, "US500.cash": 30.0,
+                    "GER40.cash": 80.0, "FRA40.cash": 60.0,
                 }
                 dist_sl = SL_DIST.get(self.symbole, prix * 0.01)
                 dist_tp = dist_sl * 4  # 4x SL pour laisser le split se faire

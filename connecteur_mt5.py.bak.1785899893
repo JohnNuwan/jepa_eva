@@ -5,7 +5,7 @@ Parle au MT5 Bridge sur 192.168.1.6:8765 (le PC local).
 
 Interface identique au stub existant pour compatibilité avec main.py.
 """
-# from __future__ import annotations  # unused
+from __future__ import annotations
 
 import logging
 import time
@@ -106,7 +106,7 @@ class ConnecteurMT5:
             "sl": sl,
             "tp": tp,
             "magic": 234567,
-            "comment": os.environ.get("TRADE_COMMENT", "JEPA-EVA"),
+            "comment": "JEPA-EVA",
         }).encode()
         try:
             req = Request(url, data=payload, headers={"Content-Type": "application/json"})
