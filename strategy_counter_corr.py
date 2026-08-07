@@ -13,6 +13,7 @@ from pathlib import Path
 sys.path.insert(0, "/home/aza/projects/jepa_eva")
 
 from main import OrchestrateurEVA, flux_marche_reel, LONGUEUR_FENETRE, calculer_atr, EQUITY_REFERENCE, MULTIPLICATEUR_ATR_SL
+from multi_tf import check_mtf_for_jepa, log_mtf
 from action_sanitizer import OrdreValide
 
 journal = logging.getLogger("eva.strategy.countercorr")
@@ -116,7 +117,17 @@ class OrchestrateurCounterCorr(OrchestrateurEVA):
 
         journal.info("Correlation %.4f < -0.7 — divergence detectee!", corr)
 
-        # 4. Emettre l'ordre normal
+        # 4. Multi-timeframe alignment check (H4/H1/M15/M5)
+        direction_int = 1 if direction > 0 else -1 if direction < 0 else 0
+        if direction_int != 0:
+            mtf_result = check_mtf_for_jepa(self.symbole, direction_int)
+            log_mtf(journal, direction_int, mtf_result)
+            if not mtf_result["allowed"]:
+                self.etat.ticks += 1
+                time.sleep(1.0)
+                return
+
+        # 5. Emettre l'ordre normal
         if direction != 0 and ordre_brut.lot >= self.sanitizer.limites.lot_min:
             lot = min(ordre_brut.lot, 0.05)
             sl = ordre_brut.stop_loss

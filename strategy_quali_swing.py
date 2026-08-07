@@ -13,6 +13,7 @@ from pathlib import Path
 sys.path.insert(0, "/home/aza/projects/jepa_eva")
 
 from main import OrchestrateurEVA, flux_marche_reel, LONGUEUR_FENETRE, calculer_atr, EQUITY_REFERENCE, MULTIPLICATEUR_ATR_SL
+from multi_tf import check_mtf_for_jepa, log_mtf
 from action_sanitizer import OrdreValide
 
 journal = logging.getLogger("eva.strategy.quali")
@@ -109,29 +110,16 @@ class OrchestrateurQualiSwing(OrchestrateurEVA):
             time.sleep(1.0)
             return
 
-        # 3. Verifier alignement tendances (M30 proxy pour H1, M15*8 proxy pour H4)
-        bars_h1 = fetch_ohlcv(self.symbole, 64, "M30")
-        bars_h4 = fetch_ohlcv(self.symbole, 128, "M15")
-        trend_h1 = analyser_tendance(bars_h1)
-        trend_h4 = analyser_tendance(bars_h4)
-
+        # 3. Multi-timeframe alignment check (H4/H1/M15/M5)
         direction_int = 1 if direction > 0 else -1
-        if trend_h1 == 0 or trend_h4 == 0:
-            journal.info("Tendance H1=%d H4=%d — tendance non definie, skip", trend_h1, trend_h4)
+        mtf_result = check_mtf_for_jepa(self.symbole, direction_int)
+        log_mtf(journal, direction_int, mtf_result)
+
+        if not mtf_result["allowed"]:
             self.signal_buffer = []
             self.etat.ticks += 1
             time.sleep(1.0)
             return
-
-        if trend_h1 != direction_int or trend_h4 != direction_int:
-            journal.info("Alignement echoue: direction=%d H1=%d H4=%d — skip",
-                         direction_int, trend_h1, trend_h4)
-            self.signal_buffer = []
-            self.etat.ticks += 1
-            time.sleep(1.0)
-            return
-
-        journal.info("Alignement OK: direction=%d H1=%d H4=%d", direction_int, trend_h1, trend_h4)
 
         # 4. Trailing stop adaptatif
         try:

@@ -311,7 +311,6 @@ class OrchestrateurEVA:
             journal.error("Erreur envoi ordre: %s", e)
         
         # Attendre 60s entre les ordres
-        import time
         time.sleep(60)
 
     def tick(self) -> None:
