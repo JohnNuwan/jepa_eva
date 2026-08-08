@@ -837,3 +837,75 @@ class OptimizedRewardShaper:
 # shaper = OptimizedRewardShaper()
 # reward = shaper.compute(returns, new_balance, old_balance)
 
+
+# AUTO-IMPL: argus
+
+import numpy as np
+from scipy.stats import ks_2samp
+import logging
+from datetime import datetime
+
+class ArgusMonitor:
+    def __init__(self, bee_name: str, drift_threshold: float = 0.05, anomaly_zscore: float = 3.0):
+        self.bee = bee_name
+        self.drift_threshold = drift_threshold
+        self.anomaly_zscore = anomaly_zscore
+        self.reference_data = None
+        self.health_check_interval = 60  # seconds
+        self.last_health_check = datetime.now()
+        logging.basicConfig(level=logging.INFO)
+        self.logger = logging.getLogger(f"Argus.{bee_name}")
+
+    def set_reference_data(self, data: np.ndarray):
+        self.reference_data = data
+        self.logger.info(f"Reference data set with {len(data)} samples")
+
+    def check_drift(self, incoming_data: np.ndarray) -> bool:
+        if self.reference_data is None:
+            self.logger.warning("No reference data; drift check skipped")
+            return False
+        stat, p_value = ks_2samp(self.reference_data, incoming_data)
+        drift_detected = p_value < self.drift_threshold
+        if drift_detected:
+            self.logger.warning(f"Drift detected: p-value={p_value:.4f}")
+        return drift_detected
+
+    def check_anomalies(self, data_point: float) -> bool:
+        if self.reference_data is None:
+            return False
+        mean = np.mean(self.reference_data)
+        std = np.std(self.reference_data)
+        z_score = (data_point - mean) / std if std > 0 else 0
+        is_anomaly = abs(z_score) > self.anomaly_zscore
+        if is_anomaly:
+            self.logger.warning(f"Anomaly detected: z-score={z_score:.2f}")
+        return is_anomaly
+
+    def check_system_health(self) -> dict:
+        now = datetime.now()
+        elapsed = (now - self.last_health_check).total_seconds()
+        health = {
+            "bee": self.bee,
+            "timestamp": now.isoformat(),
+            "alive": elapsed < self.health_check_interval * 2,
+            "last_health_check_seconds_ago": elapsed
+        }
+        self.last_health_check = now
+        if not health["alive"]:
+            self.logger.error(f"System health degraded: {health}")
+        else:
+            self.logger.info(f"Health check passed: {health}")
+        return health
+
+# Integration into existing StrategyRL class (assumed to exist)
+# Add inside __init__:
+# self.argus = ArgusMonitor("bee_main")
+# self.argus.set_reference_data(some_initial_data)
+
+# Inside train/update methods:
+# self.argus.check_drift(new_feature_batch)
+# for pred in predictions: self.argus.check_anomalies(pred)
+
+# Periodic health check:
+# self.argus.check_system_health()
+

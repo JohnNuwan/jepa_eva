@@ -110,7 +110,7 @@ for sym in SYMBOLS:
                 log(f"     pf={c.get('profit_factor','?')} "
                     f"dd={c.get('drawdown_max','?')} "
                     f"hold={c.get('performance_holdout','?')}")
-            except:
+            except Exception:
                 pass
     else:
         log(f"  ⚠ Aucun champion validé")

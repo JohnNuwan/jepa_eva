@@ -108,7 +108,7 @@ try:
         pos=json.loads(r.read().decode()).get("positions",[])
         my_pos=[p for p in pos if COMMENT in p.get("comment","")]
         existing=len(my_pos)
-except: existing=0
+except Exception: existing=0
 
 size = max(ag.get_size(state, winner) for ag in agents)
 log(f"Ensemble: {winner} size={size} pos={existing}")
@@ -130,5 +130,5 @@ try:
                 reward=float(p["profit"])/max(np.mean(df["high"].values[-7:]-df["low"].values[-7:]), 0.01)
                 for ag in agents:
                     ag.update(state, winner, reward, state)
-except: pass
+except Exception: pass
 log("done")

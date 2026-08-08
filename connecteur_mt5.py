@@ -10,6 +10,7 @@ Interface identique au stub existant pour compatibilité avec main.py.
 import logging
 import time
 import json
+import os
 import urllib.request
 from dataclasses import dataclass, field
 from typing import Optional
