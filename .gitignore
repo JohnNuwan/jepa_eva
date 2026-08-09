@@ -26,3 +26,9 @@ Thumbs.db
 # Backup files
 *.bak
 *.bak.*
+*.bak_*
+latents/
+checkpoints/
+checkpoints_wm/
+checkpoints_jepa/
+dumps/

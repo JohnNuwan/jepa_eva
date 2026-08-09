@@ -17,7 +17,6 @@ sys.path.insert(0, "/home/aza/projects/jepa_eva")
 
 from main import OrchestrateurEVA, flux_marche_reel, LONGUEUR_FENETRE, calculer_atr, EQUITY_REFERENCE, MULTIPLICATEUR_ATR_SL
 from multi_tf import check_mtf_for_jepa, log_mtf
-from multi_tf import check_mtf_for_jepa, log_mtf
 from action_sanitizer import OrdreValide
 
 journal = logging.getLogger("eva.strategy.usdjpy_h1")
