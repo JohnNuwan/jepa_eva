@@ -1,11 +1,19 @@
 #!/usr/bin/env python3
 """EVA-RL v4: Q-learning with Shadow Agent, Self-Learning, and Swap Mechanism
 
+FIXES (Aug 10, 2026):
+- All bridge API calls wrapped in try/except with retry logic — prevents crashes
+  when MT5 bridge is temporarily unreachable.
+- exit() replaced with sys.exit(1) for clean process termination.
+- Dead auto-implemented classes (OptimizedRewardShaper, ArgusMonitor) removed
+  — they were appended by the learning loop but never integrated.
+- Each network call has a retry wrapper (3 attempts, exponential backoff).
+
 Shadow Agent: parallel simulated agent with its own Q-table.
 Self-Learning: analyze past trades to boost/reduce Q-values offline.
 Swap: when shadow outperforms live by 3%+, swap Q-tables.
 """
-import numpy as np, pandas as pd, json, urllib.request, os, pickle
+import numpy as np, pandas as pd, json, urllib.request, os, pickle, sys, time
 from datetime import datetime
 
 SYMBOL = os.environ.get("TRADE_SYMBOL", "US30.cash")
@@ -24,14 +32,57 @@ SHADOW_STATE_FILE = f"/home/aza/eva-adam-v2/data/rl_shadow_state_{SYM_SAFE}.json
 
 
 # ---------------------------------------------------------------------------
+# Retry wrapper for bridge calls
+# ---------------------------------------------------------------------------
+
+def bridge_fetch(url, timeout=10, max_retries=3):
+    """Fetch a URL with retry and exponential backoff.
+    Returns parsed JSON or None on persistent failure."""
+    last_err = None
+    for attempt in range(max_retries):
+        try:
+            with urllib.request.urlopen(url, timeout=timeout) as r:
+                return json.loads(r.read().decode())
+        except Exception as e:
+            last_err = e
+            if attempt < max_retries - 1:
+                time.sleep(1 + attempt * 2)  # 1s, 3s, 5s
+    log(f"BRIDGE FETCH FAIL after {max_retries} retries: {url} — {last_err}")
+    return None
+
+
+def bridge_post(url, data, timeout=10, max_retries=3):
+    """POST JSON to bridge with retry."""
+    last_err = None
+    for attempt in range(max_retries):
+        try:
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(data).encode(),
+                headers={"Content-Type": "application/json"}
+            )
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return json.loads(r.read().decode())
+        except Exception as e:
+            last_err = e
+            if attempt < max_retries - 1:
+                time.sleep(1 + attempt * 2)
+    log(f"BRIDGE POST FAIL after {max_retries} retries: {url} — {last_err}")
+    return None
+
+
+# ---------------------------------------------------------------------------
 # Logger
 # ---------------------------------------------------------------------------
 
 def log(m, f=None):
     t = datetime.now().isoformat()[:19]
     path = f or LOG
-    with open(path, "a") as fh:
-        fh.write(t + " " + m + chr(10))
+    try:
+        with open(path, "a") as fh:
+            fh.write(t + " " + m + chr(10))
+    except Exception:
+        pass
     print(t, m)
 
 
@@ -54,12 +105,18 @@ class RLAgent:
         self.q_file = q_file or Q_FILE
         self.agent_type = agent_type
         if os.path.exists(self.q_file):
-            with open(self.q_file, "rb") as f:
-                self.q_table = pickle.load(f)
+            try:
+                with open(self.q_file, "rb") as f:
+                    self.q_table = pickle.load(f)
+            except Exception as e:
+                log(f"Q-table load error: {e} — starting fresh")
 
     def save(self):
-        with open(self.q_file, "wb") as f:
-            pickle.dump(self.q_table, f)
+        try:
+            with open(self.q_file, "wb") as f:
+                pickle.dump(self.q_table, f)
+        except Exception as e:
+            log(f"Q-table save error: {e}")
 
     def get_state(self, df, mtf):
         """6-dim state: [H4_trend, H4_atr, H1_rsi, M15_rsi, M15_macd, M5_micro]"""
@@ -115,13 +172,10 @@ class RLAgent:
         if not hasattr(self, 'open_trades'):
             self.open_trades = {}
 
-        try:
-            req = urllib.request.urlopen(BRIDGE + "/positions", timeout=5)
-            pos = json.loads(req.read().decode()).get("positions", [])
-            my_pos = [p for p in pos if COMMENT in p.get("comment", "")]
-        except Exception as e:
-            log(f"ERR interim fetch: {e}")
+        pos_data = bridge_fetch(BRIDGE + "/positions", timeout=5)
+        if pos_data is None:
             return 0
+        my_pos = [p for p in pos_data.get("positions", []) if COMMENT in str(p.get("comment", ""))]
 
         h4_dir = mtf.get("h4_dir", 0)
         tracked = set()
@@ -412,16 +466,17 @@ def self_learn(agent, shadow, atr, mtf):
 
     # 1. Collect real trades from bridge history
     try:
-        req = urllib.request.urlopen(BRIDGE + "/history", timeout=5)
-        deals = json.loads(req.read().decode()).get("deals", [])
-        for d in deals:
-            if COMMENT in d.get("comment", "") and d.get("profit", 0) != 0:
-                trades.append({
-                    "state": None,        # we don't have state for old closed trades
-                    "action": d.get("type", "unknown").lower(),
-                    "profit": float(d.get("profit", 0)),
-                    "type": "live"
-                })
+        deals_data = bridge_fetch(BRIDGE + "/history", timeout=5)
+        if deals_data:
+            deals = deals_data.get("deals", [])
+            for d in deals:
+                if COMMENT in str(d.get("comment", "")) and float(d.get("profit", 0)) != 0:
+                    trades.append({
+                        "state": None,        # we don't have state for old closed trades
+                        "action": str(d.get("type", "unknown")).lower(),
+                        "profit": float(d.get("profit", 0)),
+                        "type": "live"
+                    })
     except Exception as e:
         log(f"SELF-LEARN: could not fetch history: {e}")
 
@@ -506,9 +561,6 @@ def self_learn(agent, shadow, atr, mtf):
                 old_trades = json.load(f)
         # Merge: keep last 500
         all_trades = (old_trades + shadow.virtual_trades_log)[-500:]
-        # Add live trades from bridge
-        for d in deals if 'deals' in dir() else []:
-            pass  # skip for now — shadow trades are the primary source
         with open(TRADE_HISTORY, "w") as f:
             json.dump(all_trades, f, indent=2)
     except Exception as e:
@@ -542,21 +594,21 @@ def load_swap_state():
 
 
 def save_swap_state(state):
-    with open(SWAP_STATE_FILE, "w") as f:
-        json.dump(state, f, indent=2)
+    try:
+        with open(SWAP_STATE_FILE, "w") as f:
+            json.dump(state, f, indent=2)
+    except Exception as e:
+        log(f"SWAP STATE save error: {e}")
 
 
 def compute_live_pnl():
     """Compute cumulative P&L from closed EVA-RL trades via bridge history."""
     total = 0.0
-    try:
-        req = urllib.request.urlopen(BRIDGE + "/history", timeout=5)
-        deals = json.loads(req.read().decode()).get("deals", [])
-        for d in deals:
-            if COMMENT in d.get("comment", "") and d.get("profit", 0) != 0:
+    deals_data = bridge_fetch(BRIDGE + "/history", timeout=5)
+    if deals_data:
+        for d in deals_data.get("deals", []):
+            if COMMENT in str(d.get("comment", "")) and float(d.get("profit", 0)) != 0:
                 total += float(d["profit"])
-    except Exception as e:
-        log(f"SWAP: could not fetch history: {e}")
     return total
 
 
@@ -656,23 +708,23 @@ def check_swap(live_agent, shadow_agent, atr):
 # MAIN EXECUTION
 # ===========================================================================
 
-log("=" * 60)
-log(f"EVA-RL v4 SHADOW + SELF-LEARN + SWAP [{SYMBOL}]")
+def main():
+    log("=" * 60)
+    log(f"EVA-RL v4 SHADOW + SELF-LEARN + SWAP [{SYMBOL}]")
 
-# ---- 1. FETCH DATA ----
-try:
-    with urllib.request.urlopen(BRIDGE + "/ohlcv/" + SYMBOL + "/200/M15", timeout=10) as r:
-        df = pd.DataFrame(json.loads(r.read().decode())["bars"])
-except Exception as e:
-    log("ERR data: " + str(e))
-    exit()
+    # ---- 1. FETCH DATA ----
+    ohlcv_data = bridge_fetch(BRIDGE + "/ohlcv/" + SYMBOL + "/200/M15", timeout=10)
+    if ohlcv_data is None:
+        log("FATAL: Cannot fetch OHLCV data — aborting")
+        sys.exit(1)
+    df = pd.DataFrame(ohlcv_data["bars"])
 
-# Multi-timeframe features
-mtf = {}
-for tf in ["H4", "H1", "M5"]:
-    try:
-        with urllib.request.urlopen(BRIDGE + "/ohlcv/" + SYMBOL + "/50/" + tf, timeout=5) as r:
-            bars = json.loads(r.read().decode())["bars"]
+    # Multi-timeframe features
+    mtf = {}
+    for tf in ["H4", "H1", "M5"]:
+        bars_data = bridge_fetch(BRIDGE + "/ohlcv/" + SYMBOL + "/50/" + tf, timeout=5)
+        if bars_data:
+            bars = bars_data.get("bars", [])
             prices = [b["close"] for b in bars]
             highs = [b["high"] for b in bars]
             lows = [b["low"] for b in bars]
@@ -682,230 +734,103 @@ for tf in ["H4", "H1", "M5"]:
                 mtf[tf.lower() + "_rsi"] = 50
                 mtf[tf.lower() + "_atr"] = np.mean([h - l for h, l in
                                                      zip(highs[-14:], lows[-14:])]) / prices[-1]
-    except Exception:
-        pass
 
-try:
-    with urllib.request.urlopen(BRIDGE + "/ohlcv/" + SYMBOL + "/10/M5", timeout=5) as r:
-        bars5 = json.loads(r.read().decode())["bars"]
+    bars5_data = bridge_fetch(BRIDGE + "/ohlcv/" + SYMBOL + "/10/M5", timeout=5)
+    if bars5_data:
+        bars5 = bars5_data.get("bars", [])
         if len(bars5) >= 3:
             mtf["m5_trend"] = 1 if bars5[-1]["close"] > bars5[-3]["close"] else -1
-except Exception:
-    pass
 
-current_price = float(df["close"].values[-1])
-atr = np.mean(df["high"].values[-14:] - df["low"].values[-14:])
+    current_price = float(df["close"].values[-1])
+    atr = np.mean(df["high"].values[-14:] - df["low"].values[-14:])
 
-# ---- 2. INITIALIZE AGENTS ----
-live = RLAgent()
-shadow = ShadowAgent()
+    # ---- 2. INITIALIZE AGENTS ----
+    live = RLAgent()
+    shadow = ShadowAgent()
 
-# Get current state
-state = live.get_state(df, mtf)
-live.last_state = state
-shadow.last_state = state
+    # Get current state
+    state = live.get_state(df, mtf)
+    live.last_state = state
+    shadow.last_state = state
 
-# ---- 3. LIVE AGENT: TRADE ----
-live_action = live.act(state)
-live_interim_count = live.update_from_open_positions(mtf, atr, state)
+    # ---- 3. LIVE AGENT: TRADE ----
+    live_action = live.act(state)
+    live_interim_count = live.update_from_open_positions(mtf, atr, state)
 
-# Check current live positions
-try:
-    with urllib.request.urlopen(BRIDGE + "/positions", timeout=5) as r:
-        pos = json.loads(r.read().decode()).get("positions", [])
-        my_pos = [p for p in pos if COMMENT in p.get("comment", "")]
+    # Check current live positions
+    pos_data = bridge_fetch(BRIDGE + "/positions", timeout=5)
+    if pos_data:
+        my_pos = [p for p in pos_data.get("positions", []) if COMMENT in str(p.get("comment", ""))]
         live_existing = len(my_pos)
-except Exception:
-    live_existing = 0
+    else:
+        live_existing = 0
 
-live_size = live.get_size(state, live_action)
-log(f"LIVE: state={state} act={live_action} pos={live_existing} "
-    f"size={live_size} eps={live.epsilon:.3f}")
+    live_size = live.get_size(state, live_action)
+    log(f"LIVE: state={state} act={live_action} pos={live_existing} "
+        f"size={live_size} eps={live.epsilon:.3f}")
 
-if live_action in ["buy", "sell"] and live_existing < MAX_POS:
-    order = {"symbol": SYMBOL, "volume": live_size, "type": live_action, "comment": COMMENT}
-    try:
-        req = urllib.request.Request(
-            BRIDGE + "/trade",
-            data=json.dumps(order).encode(),
-            headers={"Content-Type": "application/json"}
-        )
-        resp = json.loads(urllib.request.urlopen(req, timeout=5).read().decode())
-        log(f"LIVE ORDER: {resp}")
-    except Exception as e:
-        log(f"LIVE ORDER ERR: {e}")
+    if live_action in ["buy", "sell"] and live_existing < MAX_POS:
+        order = {"symbol": SYMBOL, "volume": live_size, "type": live_action, "comment": COMMENT}
+        result = bridge_post(BRIDGE + "/trade", order, timeout=5)
+        if result:
+            log(f"LIVE ORDER: {result}")
+        else:
+            log(f"LIVE ORDER: failed after retries")
 
-# Live: update from closed trades
-try:
-    with urllib.request.urlopen(BRIDGE + "/history", timeout=5) as r:
-        deals = json.loads(r.read().decode()).get("deals", [])
-        for d in deals:
-            if COMMENT in d.get("comment", "") and d.get("profit", 0) != 0:
+    # Live: update from closed trades
+    deals_data = bridge_fetch(BRIDGE + "/history", timeout=5)
+    if deals_data:
+        for d in deals_data.get("deals", []):
+            if COMMENT in str(d.get("comment", "")) and float(d.get("profit", 0)) != 0:
                 live.update(state, live_action, float(d["profit"]), state)
                 log(f"LIVE CLOSED tkt={d.get('ticket','?')} profit={float(d['profit']):+.2f}")
-except Exception:
-    pass
 
-# ---- 4. SHADOW AGENT: SIMULATE ----
-# Load persistent state (P&L, trade log from previous runs)
-shadow.load_persistent_state()
+    # ---- 4. SHADOW AGENT: SIMULATE ----
+    # Load persistent state (P&L, trade log from previous runs)
+    shadow.load_persistent_state()
 
-shadow_action = shadow.act(state)
+    shadow_action = shadow.act(state)
 
-# Close any existing virtual position from previous run at current price
-for vid in list(shadow.virtual_positions.keys()):
-    shadow.simulate_close(vid, current_price, reason="new_cycle")
+    # Close any existing virtual position from previous run at current price
+    for vid in list(shadow.virtual_positions.keys()):
+        shadow.simulate_close(vid, current_price, reason="new_cycle")
 
-# Close any virtual positions that conflict with the new action
-# (e.g., was in buy, now wants sell or hold)
-for vid in list(shadow.virtual_positions.keys()):
-    vp = shadow.virtual_positions[vid]
-    if shadow_action == "hold" or (shadow_action == "buy" and vp["dir"] == "sell") or \
-       (shadow_action == "sell" and vp["dir"] == "buy"):
-        shadow.simulate_close(vid, current_price, reason="signal_change")
+    # Close any virtual positions that conflict with the new action
+    for vid in list(shadow.virtual_positions.keys()):
+        vp = shadow.virtual_positions[vid]
+        if shadow_action == "hold" or (shadow_action == "buy" and vp["dir"] == "sell") or \
+           (shadow_action == "sell" and vp["dir"] == "buy"):
+            shadow.simulate_close(vid, current_price, reason="signal_change")
 
-# Update interim rewards for remaining virtual positions
-shadow.update_virtual_positions(current_price, atr, mtf.get("h4_dir", 0), state)
+    # Update interim rewards for remaining virtual positions
+    shadow.update_virtual_positions(current_price, atr, mtf.get("h4_dir", 0), state)
 
-# Open new shadow trade if action allows
-if shadow_action in ["buy", "sell"]:
-    shadow.simulate_open(shadow_action, state, current_price, atr)
+    # Open new shadow trade if action allows
+    if shadow_action in ["buy", "sell"]:
+        shadow.simulate_open(shadow_action, state, current_price, atr)
 
-# Save persistent state
-shadow.save_persistent_state()
+    # Save persistent state
+    shadow.save_persistent_state()
 
-shadow_summary = shadow.get_summary()
-log(f"SHADOW: state={state} act={shadow_action} "
-    f"open={shadow_summary['open_positions']} "
-    f"total_trades={shadow_summary['total_trades']} "
-    f"cum_pnl={shadow_summary['virtual_pnl']:+.2f} "
-    f"q_size={shadow_summary['q_table_size']}")
+    shadow_summary = shadow.get_summary()
+    log(f"SHADOW: state={state} act={shadow_action} "
+        f"open={shadow_summary['open_positions']} "
+        f"total_trades={shadow_summary['total_trades']} "
+        f"cum_pnl={shadow_summary['virtual_pnl']:+.2f} "
+        f"q_size={shadow_summary['q_table_size']}")
 
-# ---- 5. SELF-LEARNING ----
-self_adjustments = self_learn(live, shadow, atr, mtf)
-if self_adjustments:
-    log(f"SELF-LEARN: adjusted {self_adjustments} Q-values")
+    # ---- 5. SELF-LEARNING ----
+    self_adjustments = self_learn(live, shadow, atr, mtf)
+    if self_adjustments:
+        log(f"SELF-LEARN: adjusted {self_adjustments} Q-values")
 
-# ---- 6. SWAP CHECK ----
-swapped = check_swap(live, shadow, atr)
-if swapped:
-    log("SWAP: Q-tables have been swapped")
+    # ---- 6. SWAP CHECK ----
+    swapped = check_swap(live, shadow, atr)
+    if swapped:
+        log("SWAP: Q-tables have been swapped")
 
-log("done")
-# AUTO-IMPL: rl-reward-structure
-
-# Ajout: Reward shaping optimisé intégrant profit, drawdown et métriques ajustées au risque
-class OptimizedRewardShaper:
-    def __init__(self, max_drawdown_limit=0.15, risk_free_rate=0.02, 
-                 profit_weight=1.0, drawdown_penalty_weight=0.5, sharpe_weight=0.1):
-        self.max_drawdown_limit = max_drawdown_limit
-        self.risk_free_rate = risk_free_rate
-        self.profit_weight = profit_weight
-        self.drawdown_penalty_weight = drawdown_penalty_weight
-        self.sharpe_weight = sharpe_weight
-
-    def compute(self, returns_history, current_balance, previous_balance):
-        import numpy as np
-        # Profit instantané
-        profit = current_balance - previous_balance
-        
-        # Drawdown courant
-        if len(returns_history) > 0:
-            cumulative = np.cumprod(1 + np.array(returns_history))
-            running_max = np.maximum.accumulate(cumulative)
-            drawdown = (running_max[-1] - cumulative[-1]) / running_max[-1]
-        else:
-            drawdown = 0.0
-        
-        # Pénalité si drawdown > seuil
-        drawdown_penalty = -abs(drawdown) if drawdown > self.max_drawdown_limit else 0.0
-        
-        # Sharpe ratio sur la fenêtre disponible
-        if len(returns_history) > 1:
-            excess = np.array(returns_history) - self.risk_free_rate / (252 * 6.5 * 60)  # taux par minute
-            sharpe = np.mean(excess) / (np.std(excess) + 1e-8)
-        else:
-            sharpe = 0.0
-        
-        # Récompense composite
-        reward = (self.profit_weight * profit 
-                  + self.drawdown_penalty_weight * drawdown_penalty 
-                  + self.sharpe_weight * sharpe)
-        return reward
-
-# Exemple d'utilisation dans la boucle d'entraînement (à intégrer selon votre code existant)
-# shaper = OptimizedRewardShaper()
-# reward = shaper.compute(returns, new_balance, old_balance)
+    log("done")
 
 
-# AUTO-IMPL: argus
-
-import numpy as np
-from scipy.stats import ks_2samp
-import logging
-from datetime import datetime
-
-class ArgusMonitor:
-    def __init__(self, bee_name: str, drift_threshold: float = 0.05, anomaly_zscore: float = 3.0):
-        self.bee = bee_name
-        self.drift_threshold = drift_threshold
-        self.anomaly_zscore = anomaly_zscore
-        self.reference_data = None
-        self.health_check_interval = 60  # seconds
-        self.last_health_check = datetime.now()
-        logging.basicConfig(level=logging.INFO)
-        self.logger = logging.getLogger(f"Argus.{bee_name}")
-
-    def set_reference_data(self, data: np.ndarray):
-        self.reference_data = data
-        self.logger.info(f"Reference data set with {len(data)} samples")
-
-    def check_drift(self, incoming_data: np.ndarray) -> bool:
-        if self.reference_data is None:
-            self.logger.warning("No reference data; drift check skipped")
-            return False
-        stat, p_value = ks_2samp(self.reference_data, incoming_data)
-        drift_detected = p_value < self.drift_threshold
-        if drift_detected:
-            self.logger.warning(f"Drift detected: p-value={p_value:.4f}")
-        return drift_detected
-
-    def check_anomalies(self, data_point: float) -> bool:
-        if self.reference_data is None:
-            return False
-        mean = np.mean(self.reference_data)
-        std = np.std(self.reference_data)
-        z_score = (data_point - mean) / std if std > 0 else 0
-        is_anomaly = abs(z_score) > self.anomaly_zscore
-        if is_anomaly:
-            self.logger.warning(f"Anomaly detected: z-score={z_score:.2f}")
-        return is_anomaly
-
-    def check_system_health(self) -> dict:
-        now = datetime.now()
-        elapsed = (now - self.last_health_check).total_seconds()
-        health = {
-            "bee": self.bee,
-            "timestamp": now.isoformat(),
-            "alive": elapsed < self.health_check_interval * 2,
-            "last_health_check_seconds_ago": elapsed
-        }
-        self.last_health_check = now
-        if not health["alive"]:
-            self.logger.error(f"System health degraded: {health}")
-        else:
-            self.logger.info(f"Health check passed: {health}")
-        return health
-
-# Integration into existing StrategyRL class (assumed to exist)
-# Add inside __init__:
-# self.argus = ArgusMonitor("bee_main")
-# self.argus.set_reference_data(some_initial_data)
-
-# Inside train/update methods:
-# self.argus.check_drift(new_feature_batch)
-# for pred in predictions: self.argus.check_anomalies(pred)
-
-# Periodic health check:
-# self.argus.check_system_health()
-
+if __name__ == "__main__":
+    main()
