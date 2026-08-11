@@ -8,7 +8,6 @@ optimisé par XLA.
 Conforme au Bloc B.1 de la MASTER-SPECIFICATION E.V.A.
 """
 
-# from __future__ import annotations  # unused
 
 import jax
 import torch

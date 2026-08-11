@@ -7,7 +7,6 @@ marge > 1 % du compte par trade), forçant un lot de sécurité.
 Conforme au Bloc C.1 de la MASTER-SPECIFICATION E.V.A.
 """
 
-# from __future__ import annotations  # unused
 
 from dataclasses import dataclass
 

@@ -8,7 +8,6 @@ Transforme un flux brut OHLCV/ticks en tenseur de features stationnaire :
 Conforme au Bloc A.1 de la MASTER-SPECIFICATION E.V.A.
 """
 
-# from __future__ import annotations  # unused
 
 import torch
 from torch import Tensor, nn

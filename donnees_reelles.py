@@ -7,7 +7,6 @@ présents dans ``data/`` et produit des fenêtres glissantes normalisables par
 Conforme PEP 8 / PEP 484 / PEP 257 (docstrings Google en français).
 """
 
-# from __future__ import annotations  # unused
 
 from pathlib import Path
 

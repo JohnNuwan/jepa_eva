@@ -15,7 +15,6 @@ Conforme PEP 8 / PEP 484 / PEP 257 (docstrings Google en français).
 Exécution : PYTHONPATH=. venv/bin/python main.py
 """
 
-# from __future__ import annotations  # unused
 from datetime import datetime
 import json
 

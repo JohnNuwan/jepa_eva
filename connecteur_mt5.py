@@ -5,7 +5,6 @@ Parle au MT5 Bridge sur 192.168.1.6:8765 (le PC local).
 
 Interface identique au stub existant pour compatibilité avec main.py.
 """
-# from __future__ import annotations  # unused
 
 import logging
 import time

@@ -8,7 +8,6 @@ reconstruction sémantique d'un bloc futur masqué à 20 %.
 Conforme au Bloc A.2 de la MASTER-SPECIFICATION E.V.A.
 """
 
-# from __future__ import annotations  # unused
 
 import copy
 

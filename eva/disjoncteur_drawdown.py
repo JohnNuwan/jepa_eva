@@ -8,7 +8,6 @@ enregistre une pénalité de fitness maximale pour la lignée fautive.
 Conforme au Bloc C.2 de la MASTER-SPECIFICATION E.V.A.
 """
 
-# from __future__ import annotations  # unused
 
 import json
 import time

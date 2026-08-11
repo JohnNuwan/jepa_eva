@@ -14,7 +14,6 @@ Exécution du test de vitesse :
     PYTHONPATH=. venv/bin/python jax_arena.py
 """
 
-# from __future__ import annotations  # unused
 
 import time
 from functools import partial

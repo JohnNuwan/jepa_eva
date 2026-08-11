@@ -8,7 +8,6 @@ arithmétique + mutation gaussienne adaptive avec garde anti-consanguinité.
 Conforme au Bloc B.3 de la MASTER-SPECIFICATION E.V.A.
 """
 
-# from __future__ import annotations  # unused
 
 from functools import partial
 from typing import NamedTuple

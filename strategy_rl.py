@@ -834,3 +834,358 @@ def main():
 
 if __name__ == "__main__":
     main()
+# AUTO-IMPL: rl-reward-structure
+
+# Ajouts à strategy_rl.py
+
+import numpy as np
+from collections import deque
+
+class RiskAdjustedRewardAgent:
+    """Extension de l'agent RL pour optimiser les rendements ajustés au risque."""
+    
+    def __init__(self, *args, window_size=20, risk_aversion=1.0, target_volatility=0.15, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.returns_window = deque(maxlen=window_size)
+        self.window_size = window_size
+        self.risk_aversion = risk_aversion  # Coefficient d'aversion au risque
+        self.target_volatility = target_volatility  # Volatilité cible annuelle
+        self.prev_portfolio_value = None
+        self.episode_returns = []
+        
+    def _compute_risk_adjusted_reward(self, reward, portfolio_value):
+        """Calcule le signal de récompense ajusté au risque."""
+        if self.prev_portfolio_value is not None:
+            # Rendement instantané
+            instant_return = (portfolio_value - self.prev_portfolio_value) / self.prev_portfolio_value
+            self.returns_window.append(instant_return)
+            self.episode_returns.append(instant_return)
+            
+            # Si suffisamment de données dans la fenêtre
+            if len(self.returns_window) >= 2:
+                # Volatilité (écart-type annualisé, 252 jours)
+                volatility = np.std(list(self.returns_window)) * np.sqrt(252)
+                
+                # Ratio de Sharpe instantané ajusté (avec aversion au risque)
+                # Reward = return - risk_aversion * volatility^2 (utilité quadratique)
+                risk_adjusted = instant_return - (self.risk_aversion * (volatility ** 2))
+                
+                # Pénalité pour volatilité excessive
+                if volatility > self.target_volatility:
+                    over_vol_penalty = (volatility - self.target_volatility) * 10
+                    risk_adjusted -= over_vol_penalty
+                    
+                return risk_adjusted
+        
+        return reward
+        
+    def step(self, action):
+        """Étape modifiée avec récompense ajustée au risque."""
+        # Exécute l'action originale pour obtenir l'état et la récompense basique
+        next_state, base_reward, done, info = super().step(action)
+        
+        # Calcule la valeur du portefeuille (supposé dans info)
+        portfolio_value = info.get('portfolio_value', 0)
+        
+        # Remplace la récompense par la version ajustée au risque
+        risk_adjusted_reward = self._compute_risk_adjusted_reward(base_reward, portfolio_value)
+        
+        # Stocke pour la prochaine itération
+        self.prev_portfolio_value = portfolio_value
+        
+        # Réinitialise les rendements de l'épisode si done
+        if done:
+            self._reset_episode_metrics()
+        
+        return next_state, risk_adjusted_reward, done, info
+    
+    def _reset_episode_metrics(self):
+        """Réinitialise les métriques pour un nouvel épisode."""
+        self.episode_returns = []
+        self.prev_portfolio_value = None
+    
+    def reset(self):
+        """Reset l'environnement et les métriques de risque."""
+        state = super().reset()
+        self._reset_episode_metrics()
+        self.returns_window.clear()
+        return state
+
+
+# AUTO-IMPL: worldcycle
+
+    def train_world_model(self, market_data: pd.DataFrame, epochs: int = 100, lr: float = 1e-3):
+        """Train a world model (LSTM-based) to simulate market dynamics for RL agent."""
+        # Prepare sequences: use past window_size steps to predict next state (price, return)
+        window = self.window_size if hasattr(self, 'window_size') else 10
+        seq_len = window
+        X, y = [], []
+        for i in range(len(market_data) - seq_len):
+            X.append(market_data.iloc[i:i+seq_len][['close', 'volume']].values)  # features
+            y.append(market_data.iloc[i+seq_len][['close', 'return']].values)    # targets: next close & return
+        X = np.array(X)
+        y = np.array(y)
+
+        # Build LSTM model for dynamics simulation
+        from tensorflow.keras.models import Sequential
+        from tensorflow.keras.layers import LSTM, Dense
+        from tensorflow.keras.optimizers import Adam
+
+        model = Sequential([
+            LSTM(64, activation='relu', input_shape=(seq_len, 2)),
+            Dense(32, activation='relu'),
+            Dense(2)  # predict [close, return]
+        ])
+        model.compile(optimizer=Adam(learning_rate=lr), loss='mse')
+
+        # Train world model
+        model.fit(X, y, epochs=epochs, batch_size=32, verbose=0, validation_split=0.2)
+
+        # Store model for RL environment simulation
+        self.world_model = model
+        print("World model trained successfully (LSTM on price/volume sequences)")
+
+    def simulate_step(self, current_state: np.ndarray) -> np.ndarray:
+        """Use world model to predict next market state given current window."""
+        if not hasattr(self, 'world_model'):
+            raise AttributeError("World model not trained. Call train_world_model() first.")
+        # current_state shape: (window, 2) = [close, volume] sequence
+        assert current_state.shape == (self.window_size, 2)
+        next_state = self.world_model.predict(current_state.reshape(1, *current_state.shape), verbose=0)
+        return next_state.reshape(-1)  # returns [next_close, next_return]
+
+
+# AUTO-IMPL: agent-against-agent
+# ===== Code supplémentaire : Boucle d'entraînement adversarial
+
+# AUTO-IMPL: ai-governance-finance
+
+import logging
+from datetime import datetime
+from typing import Dict, List, Optional
+
+class GovernanceFramework:
+    """Governance framework for trading strategy with rules, logging, and audit trails."""
+    
+    def __init__(self):
+        self.rules = {
+            'max_position_size': 0.1,  # Max 10% of portfolio per trade
+            'max_daily_loss': 0.05,    # Max 5% daily loss
+            'min_confidence': 0.6,     # Min confidence score to execute
+            'cooldown_period': 60      # Seconds between same asset trades
+        }
+        self.audit_log: List[Dict] = []
+        self.trade_history: Dict[str, List[float]] = {}
+        self.logger = logging.getLogger(__name__)
+        
+    def check_rules(self, action: str, asset: str, confidence: float, 
+                    position_size: float) -> bool:
+        """Verify all governance rules before trade execution."""
+        # Check confidence threshold
+        if confidence < self.rules['min_confidence']:
+            self._log_violation('confidence', asset, confidence)
+            return False
+            
+        # Check position size limit
+        if position_size > self.rules['max_position_size']:
+            self._log_violation('position_size', asset, position_size)
+            return False
+            
+        # Check cooldown period
+        if asset in self.trade_history:
+            last_trade = self.trade_history[asset][-1]
+            time_diff = (datetime.now() - last_trade).total_seconds()
+            if time_diff < self.rules['cooldown_period']:
+                self._log_violation('cooldown', asset, time_diff)
+                return False
+                
+        return True
+        
+    def _log_violation(self, rule: str, asset: str, value) -> None:
+        """Log governance violations with timestamp."""
+        entry = {
+            'timestamp': datetime.now().isoformat(),
+            'rule': rule,
+            'asset': asset,
+            'value': value,
+            'status': 'BLOCKED'
+        }
+        self.audit_log.append(entry)
+        self.logger.warning(f"Governance violation: {rule} for {asset}")
+        
+    def record_trade(self, asset: str, action: str, value: float) -> None:
+        """Record trade in audit trail."""
+        if asset not in self.trade_history:
+            self.trade_history[asset] = []
+        self.trade_history[asset].append(datetime.now())
+        
+        entry = {
+            'timestamp': datetime.now().isoformat(),
+            'asset': asset,
+            'action': action,
+            'value': value,
+            'status': 'EXECUTED'
+        }
+        self.audit_log.append(entry)
+
+
+# AUTO-IMPL: argus
+
+from datetime import datetime
+import psutil
+import torch
+import numpy as np
+from typing import Dict, Any
+
+# --- Argus monitoring integration ---
+class ArgusMonitor:
+    """Live monitoring for latency, GPU, and model drift on Bee & TheHive."""
+    
+    def __init__(self):
+        self.latency_buffer = []
+        self.drift_threshold = 0.15
+        self.last_model_weights = None
+        self._log_path = "argus_metrics.log"
+        
+    def record_trade_latency(self, start_time: float):
+        """Record end-to-end trade execution latency in ms."""
+        latency_ms = (time.time() - start_time) * 1000
+        self.latency_buffer.append(latency_ms)
+        if len(self.latency_buffer) > 100:
+            self.latency_buffer.pop(0)
+        self._log_to_file(f"LATENCY:{latency_ms:.2f}ms")
+        return latency_ms
+    
+    def monitor_gpu(self) -> Dict[str, Any]:
+        """Return GPU utilization & memory for TheHive inference nodes."""
+        gpu_stats = {"util": 0.0, "mem_used_mb": 0.0, "mem_free_mb": 0.0}
+        if torch.cuda.is_available():
+            gpu_stats["util"] = torch.cuda.utilization()
+            gpu_stats["mem_used_mb"] = torch.cuda.memory_allocated() / 1e6
+            gpu_stats["mem_free_mb"] = (torch.cuda.get_device_properties(0).total_memory - 
+                                       torch.cuda.memory_allocated()) / 1e6
+        self._log_to_file(f"GPU:{gpu_stats}")
+        return gpu_stats
+    
+    def check_model_drift(self, model: torch.nn.Module, 
+                          current_weights: np.ndarray) -> float:
+        """Detect weight distribution drift relative to baseline (Bee)."""
+        if self.last_model_weights is None:
+            self.last_model_weights = current_weights
+            return 0.0
+        drift_score = np.mean(np.abs(current_weights - self.last_model_weights))
+        drift_score /= (np.mean(np.abs(self.last_model_weights)) + 1e-8)
+        if drift_score > self.drift_threshold:
+            self._log_to_file(f"DRIFT_ALERT:{drift_score:.4f}")
+        self.last_model_weights = current_weights
+        return drift_score
+    
+    def _log_to_file(self, message: str):
+        """Persist metrics for Bee/TheHive dashboards."""
+        with open(self._log_path, "a") as f:
+            f.write(f"{datetime.utcnow().isoformat()} | {message}\n")
+
+# Initialize global instance (preserve existing strategy state)
+argus = ArgusMonitor()
+
+# --- Example usage inside your existing strategy loop ---
+# Inside _execute_trade() or similar:
+# start = time.time()
+# ... existing trade logic ...
+# argus.record_trade_latency(start)
+# gpu_stats = argus.monitor_gpu()
+# drift = argus.check_model_drift(policy_net, 
+#                                 policy_net.fc1.weight.detach().cpu().numpy().flatten())
+
+
+# AUTO-IMPL: argus
+# --- Integration Argus for live monitoring ---
+import argus  # hypothetical monitoring library
+import time
+import torch
+
+class ArgusMonitor:
+    """Monitor latency, GPU utilization, and model drift via Argus."""
+    def __init__(self, api_key: str = "default", base_url: str = "http://localhost:8080"):
+        self.client = argus.Client(api_key=api_key, base_url=base_url)
+        self.last_metrics = {}
+        self._init_metrics()
+
+    def _init_metrics(self):
+        # define metric names
+        self.metric_latency = "trade.latency_ms"
+        self.metric_gpu_util = "gpu.utilization_percent"
+        self.metric_model_drift = "model.drift_score"
+
+    def record_latency(self, start_time: float, end_time: float):
+        latency_ms = (end_time - start_time) * 1000
+        self.client.gauge(self.metric_latency, latency_ms)
+
+    def record_gpu_util(self):
+        if torch.cuda.is_available():
+            util = torch.cuda.utilization()  # hypothetical
+            self.client.gauge(self.metric_gpu_util, util)
+
+    def record_model_drift(self, predictions, expected=None):
+        # simple drift: mean absolute error vs expected or baseline
+        if expected is not None:
+            drift = float(torch.mean(torch.abs(predictions - expected)).item())
+        else:
+            drift = 0.0
+        self.client.gauge(self.metric_model_drift, drift)
+
+    def flush(self):
+        self.client.flush()
+
+# Instantiate global monitor (adjust config as needed)
+monitor = ArgusMonitor(api_key="your_argus_key", base_url="http://bee:8080")
+
+# --- Patch existing trading loop (example) ---
+# In your main loop, wrap the trade execution like:
+# start = time.time()
+# # ... execute trade ...
+# end = time.time()
+# monitor.record_latency(start, end)
+# monitor.record_gpu_util()
+# monitor.record_model_drift(predictions, expected)
+# monitor.flush()
+
+# AUTO-IMPL: rl-reward-structure
+def _calculate_optimized_reward(self, profit, drawdown, transaction_cost):
+        """Optimized reward function balancing profit, drawdown, and transaction costs."""
+        profit_weight = 1.0
+        drawdown_penalty = 1.5
+        cost_penalty = 2.0
+        
+        # Normalize instruments (assuming 4 instruments)
+        n_instruments = 4
+        normalized_profit = profit / n_instruments
+        normalized_drawdown = drawdown / n_instruments
+        normalized_cost = transaction_cost / n_instruments
+        
+        # Reward components
+        profit_component = profit_weight * normalized_profit
+        drawdown_component = -drawdown_penalty * (normalized_drawdown ** 2)  # Quadratic penalty
+        cost_component = -cost_penalty * normalized_cost
+        
+        # Additional penalty for excessive drawdown
+        excessive_drawdown_penalty = -0.5 * max(0, normalized_drawdown - 0.1) ** 3 if normalized_drawdown > 0.1 else 0
+        
+        # Final reward
+        reward = profit_component + drawdown_component + cost_component + excessive_drawdown_penalty
+        return reward
+
+    # Custom environment reward override
+    def step(self, action):
+        """Override step to include optimized reward."""
+        obs, reward, done, info = super().step(action)
+        
+        # Extract data from info dictionary
+        profit = info.get('profit', 0.0)
+        drawdown = info.get('drawdown', 0.0)
+        transaction_cost = info.get('cost', 0.0)
+        
+        # Apply optimized reward
+        optimized_reward = self._calculate_optimized_reward(profit, drawdown, transaction_cost)
+        
+        return obs, optimized_reward, done, info
