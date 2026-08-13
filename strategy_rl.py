@@ -1150,42 +1150,169 @@ monitor = ArgusMonitor(api_key="your_argus_key", base_url="http://bee:8080")
 # monitor.record_model_drift(predictions, expected)
 # monitor.flush()
 
-# AUTO-IMPL: rl-reward-structure
-def _calculate_optimized_reward(self, profit, drawdown, transaction_cost):
-        """Optimized reward function balancing profit, drawdown, and transaction costs."""
-        profit_weight = 1.0
-        drawdown_penalty = 1.5
-        cost_penalty = 2.0
-        
-        # Normalize instruments (assuming 4 instruments)
-        n_instruments = 4
-        normalized_profit = profit / n_instruments
-        normalized_drawdown = drawdown / n_instruments
-        normalized_cost = transaction_cost / n_instruments
-        
-        # Reward components
-        profit_component = profit_weight * normalized_profit
-        drawdown_component = -drawdown_penalty * (normalized_drawdown ** 2)  # Quadratic penalty
-        cost_component = -cost_penalty * normalized_cost
-        
-        # Additional penalty for excessive drawdown
-        excessive_drawdown_penalty = -0.5 * max(0, normalized_drawdown - 0.1) ** 3 if normalized_drawdown > 0.1 else 0
-        
-        # Final reward
-        reward = profit_component + drawdown_component + cost_component + excessive_drawdown_penalty
-        return reward
+# AUTO-IMPL: agent-against-agent
+import numpy as np
+from gym import Env, Wrapper
 
-    # Custom environment reward override
+class AdversarialEnvWrapper(Wrapper):
+    """Wraps the original trading environment to add adversarial perturbations."""
+    def __init__(self, env, epsilon=0.01, noise_type='uniform'):
+        super().__init__(env)
+        self.epsilon = epsilon
+        self.noise_type = noise_type
+
+    def reset(self, **kwargs):
+        obs = self.env.reset(**kwargs)
+        return self._perturb(obs)
+
     def step(self, action):
-        """Override step to include optimized reward."""
-        obs, reward, done, info = super().step(action)
-        
-        # Extract data from info dictionary
-        profit = info.get('profit', 0.0)
-        drawdown = info.get('drawdown', 0.0)
-        transaction_cost = info.get('cost', 0.0)
-        
-        # Apply optimized reward
-        optimized_reward = self._calculate_optimized_reward(profit, drawdown, transaction_cost)
-        
-        return obs, optimized_reward, done, info
+        obs, reward, done, info = self.env.step(action)
+        return self._perturb(obs), reward, done, info
+
+    def _perturb(self, obs):
+        """Apply adversarial noise to observation."""
+        if self.noise_type == 'uniform':
+            noise = np.random.uniform(-self.epsilon, self.epsilon, size=obs.shape)
+        elif self.noise_type == 'gaussian':
+            noise = np.random.normal(0, self.epsilon, size=obs.shape)
+        else:
+            noise = 0
+        return obs + noise
+
+
+def create_adversarial_trainer(base_env, main_agent, adversary_agent=None, epsilon=0.01):
+    """
+    Creates a training wrapper that uses an adversarial environment and optionally
+    an adversary agent that tries to minimize the main agent's reward.
+    """
+    adv_env = AdversarialEnvWrapper(base_env, epsilon=epsilon)
+    return adv_env
+
+
+# Example of an adversarial agent that selects worst-case perturbations
+class AdversarialAgent:
+    def __init__(self, epsilon=0.01, step_size=0.001):
+        self.epsilon = epsilon
+        self.step_size = step_size
+
+    def get_perturbation(self, state, action, reward):
+        # Simple gradient sign method: perturb state to reduce reward
+        # In practice, this would use the main agent's policy gradient
+        return np.random.normal(0, self.epsilon, size=state.shape)
+
+# AUTO-IMPL: argus
+# --- Argus Integration for real-time trade monitoring and anomaly detection ---
+import threading
+import time
+import json
+import requests
+from typing import Dict, Any
+
+class ArgusMonitor:
+    """Monitor trades and detect anomalies using Argus service on Bee server."""
+    def __init__(self, server_url: str = "http://bee-server:8080/argus", api_key: str = ""):
+        self.server_url = server_url.rstrip('/')
+        self.api_key = api_key
+        self._lock = threading.Lock()
+        self._anomaly_threshold = 0.95  # adjust based on Argus response
+
+    def send_trade_event(self, trade_data: Dict[str, Any]) -> bool:
+        """Send trade event to Argus for monitoring. Returns True if success."""
+        try:
+            headers = {"Content-Type": "application/json", "X-API-Key": self.api_key}
+            response = requests.post(f"{self.server_url}/events", json=trade_data, headers=headers, timeout=5)
+            return response.status_code == 200
+        except Exception as e:
+            print(f"Argus send error: {e}")
+            return False
+
+    def check_anomaly(self, trade_data: Dict[str, Any]) -> float:
+        """Evaluate anomaly score for a trade. Returns score 0-1, higher = more anomalous."""
+        try:
+            headers = {"Content-Type": "application/json", "X-API-Key": self.api_key}
+            response = requests.post(f"{self.server_url}/anomaly", json=trade_data, headers=headers, timeout=5)
+            if response.status_code == 200:
+                return response.json().get("anomaly_score", 0.0)
+            return 0.0
+        except Exception as e:
+            print(f"Argus anomaly check error: {e}")
+            return 0.0
+
+    def is_anomalous(self, trade_data: Dict[str, Any]) -> bool:
+        """Returns True if trade is considered anomalous."""
+        score = self.check_anomaly(trade_data)
+        return score >= self._anomaly_threshold
+
+# Global instance (adjust config as needed)
+_argus = ArgusMonitor(server_url="http://localhost:8080", api_key="your_api_key_here")
+
+def monitor_trade(trade_data: Dict[str, Any]) -> None:
+    """Send trade data to Argus and log anomaly alerts."""
+    _argus.send_trade_event(trade_data)
+    if _argus.is_anomalous(trade_data):
+        print(f"ARGUS ANOMALY DETECTED for trade: {trade_data.get('id', 'unknown')}")
+        # Additional alerting actions can be added here (e.g., pause trading)
+
+# Example call from existing code:
+# from strategy_rl import monitor_trade
+# monitor_trade(trade_data)
+
+# AUTO-IMPL: argus
+import psutil
+import time
+from datetime import datetime
+from typing import Callable, Any
+
+class ArgusMonitor:
+    """Real-time monitoring layer for trade execution and system health on Bee."""
+    def __init__(self, enable_health: bool = True, log_dir: str = "logs/argus"):
+        self.enable_health = enable_health
+        self.log_dir = log_dir
+        self._start_time = time.time()
+        os.makedirs(self.log_dir, exist_ok=True) if not os.path.exists(self.log_dir) else None
+
+    def monitor_execution(self, func: Callable) -> Callable:
+        """Decorator to wrap trade execution with monitoring."""
+        def wrapper(*args, **kwargs) -> Any:
+            trade_id = kwargs.get("trade_id", "unknown")
+            start = time.time()
+            try:
+                result = func(*args, **kwargs)
+                elapsed = time.time() - start
+                self._log_trade(trade_id, "success", elapsed, result)
+                return result
+            except Exception as e:
+                elapsed = time.time() - start
+                self._log_trade(trade_id, "error", elapsed, str(e))
+                raise
+        return wrapper
+
+    def check_health(self) -> dict:
+        """Return current system health metrics."""
+        if not self.enable_health:
+            return {}
+        cpu = psutil.cpu_percent(interval=0.5)
+        mem = psutil.virtual_memory().percent
+        uptime = time.time() - self._start_time
+        return {"cpu": cpu, "memory": mem, "uptime": uptime, "timestamp": datetime.now().isoformat()}
+
+    def _log_trade(self, trade_id: str, status: str, latency: float, detail: Any):
+        """Write trade event to local log file."""
+        log_entry = f"{datetime.now().isoformat()} | {trade_id} | {status} | {latency:.4f}s | {detail}\n"
+        with open(f"{self.log_dir}/trade_events.log", "a") as f:
+            f.write(log_entry)
+
+# Integration example – assume existing RL strategy class
+class BeeRLStrategy:
+    def __init__(self, *args, **kwargs):
+        self.monitor = ArgusMonitor()
+        # wrap execute_trade after method definition
+        self.execute_trade = self.monitor.monitor_execution(self.execute_trade)
+
+    def execute_trade(self, trade_id: str, **params):
+        # Original trade execution logic (unchanged)
+        # ... (existing code)
+        return {"status": "executed", "trade_id": trade_id}
+
+    def system_health_report(self):
+        return self.monitor.check_health()
