@@ -1,0 +1,2 @@
+{"run_id": "XAUUSD_shortseg_lev30_hive", "fold": 0, "generation": 0, "fitness": 2.8704, "net_profit": 4.2486, "drawdown": 1.4848, "sortino": 0.0533, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
+{"run_id": "XAUUSD_shortseg_lev30_hive", "fold": 0, "generation": 10, "fitness": 33.6124, "net_profit": 33.3421, "drawdown": 0.0, "sortino": 0.1352, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}

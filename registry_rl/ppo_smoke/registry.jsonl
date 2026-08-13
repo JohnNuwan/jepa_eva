@@ -1,0 +1,1 @@
+{"run_id": "ppo_smoke", "generation": 5, "fitness": -24.896, "net_profit": -12.2056, "max_drawdown": 12.2056, "sortino": -0.2424, "win_rate": 24.4014, "profit_factor": 0.29, "nb_trades": 301.6667, "fichier": "champion_final.npz"}

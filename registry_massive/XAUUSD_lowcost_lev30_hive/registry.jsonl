@@ -1,0 +1,1 @@
+{"run_id": "XAUUSD_lowcost_lev30_hive", "fold": "final", "generation": 250, "fitness_train": -145.913330078125, "fitness": -243.2634, "net_profit": -97.0973, "drawdown": 97.6368, "sortino": 0.0128, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_final.npz"}

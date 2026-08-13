@@ -1,0 +1,3 @@
+{"run_id": "EURUSD_smallgru_lev30_hive", "fold": 0, "generation": 0, "fitness": 12.2914, "net_profit": 15.2545, "drawdown": 3.0471, "sortino": 0.0419, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
+{"run_id": "EURUSD_smallgru_lev30_hive", "fold": 0, "generation": 20, "fitness": 13.1978, "net_profit": 21.412, "drawdown": 8.2201, "sortino": 0.003, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
+{"run_id": "EURUSD_smallgru_lev30_hive", "fold": 0, "generation": 30, "fitness": 27.0209, "net_profit": 28.937, "drawdown": 2.1433, "sortino": 0.1136, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}

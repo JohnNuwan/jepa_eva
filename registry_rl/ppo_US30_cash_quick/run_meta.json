@@ -1,0 +1,25 @@
+{
+  "run_id": "ppo_US30_cash_quick",
+  "symbole": "US30.cash",
+  "algo": "ppo",
+  "duree_s": 32.2,
+  "nb_champions": 1,
+  "nb_records": 9,
+  "meilleur_holdout": 0.0645,
+  "config": {
+    "symbole": "US30.cash",
+    "timeframe": "m15",
+    "frac_train": 0.8,
+    "max_holdout": 1500,
+    "np_min_holdout": 0.0,
+    "dd_max_holdout": 5.0,
+    "seed": 0,
+    "id": "ppo_US30_cash_quick",
+    "generations": 50,
+    "steps": 50000,
+    "segment": 256,
+    "nb_envs": 4,
+    "eval_holdout": 5,
+    "largeur": 128
+  }
+}

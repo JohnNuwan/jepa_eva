@@ -1,0 +1,3 @@
+{"run_id": "GBPUSD_seed7_lev30_hive", "fold": 0, "generation": 0, "fitness": 31.667, "net_profit": 32.069, "drawdown": 0.7302, "sortino": 0.1641, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
+{"run_id": "GBPUSD_seed7_lev30_hive", "fold": 0, "generation": 30, "fitness": 53.5126, "net_profit": 54.1624, "drawdown": 0.8418, "sortino": 0.096, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
+{"run_id": "GBPUSD_seed7_lev30_hive", "fold": 0, "generation": 60, "fitness": 54.5108, "net_profit": 55.0721, "drawdown": 0.9997, "sortino": 0.2192, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}

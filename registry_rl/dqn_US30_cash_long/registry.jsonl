@@ -1,0 +1,1 @@
+{"run_id": "dqn_US30_cash_long", "pas": 500000, "fitness": -8.2752, "net_profit": -3.8603, "max_drawdown": 4.2476, "sortino": -0.0836, "win_rate": 21.1837, "profit_factor": 0.3931, "nb_trades": 103.3333, "fichier": "champion_final.npz"}

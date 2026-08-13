@@ -156,7 +156,7 @@ def main():
             log(f"  🔄 Lancement validation avec {metrics['total_trades']} trades réels...")
             rc = subprocess.run(
                 [VENV, "train_arena_validated.py", "--symbole", "XAUUSD", 
-                 "--generations", "50", "--gpu", "1"],
+                 "--generations", "50"],
                 capture_output=True, text=True, timeout=7200
             )
             if rc.returncode == 0:

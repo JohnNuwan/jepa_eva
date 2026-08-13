@@ -1,0 +1,19 @@
+{
+  "run_id": "ppo_smoke",
+  "symbole": "US30.cash",
+  "algo": "ppo",
+  "duree_s": 9.4,
+  "nb_champions": 0,
+  "nb_records": 0,
+  "meilleur_holdout": -Infinity,
+  "config": {
+    "id": "ppo_smoke",
+    "symbole": "US30.cash",
+    "timeframe": "m15",
+    "generations": 5,
+    "steps": 20480,
+    "segment": 512,
+    "nb_envs": 8,
+    "seed": 0
+  }
+}

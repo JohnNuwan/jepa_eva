@@ -1,0 +1,24 @@
+{
+  "run_id": "td3_BTCUSDT_rapide",
+  "symbole": "BTCUSDT",
+  "algo": "td3",
+  "duree_s": 295.4,
+  "nb_champions": 6,
+  "nb_records": 20,
+  "meilleur_holdout": 6.635,
+  "config": {
+    "symbole": "BTCUSDT",
+    "timeframe": "m15",
+    "frac_train": 0.8,
+    "max_holdout": 1500,
+    "np_min_holdout": 0.0,
+    "dd_max_holdout": 5.0,
+    "seed": 0,
+    "id": "td3_BTCUSDT_rapide",
+    "steps": 50000,
+    "segment": 256,
+    "eval_holdout": 2500,
+    "buffer_taille": 20000,
+    "largeur": 128
+  }
+}

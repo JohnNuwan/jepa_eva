@@ -1,0 +1,15 @@
+{
+  "symbole": "BTCUSD",
+  "timeframe": "m15",
+  "frac_train": 0.8,
+  "max_holdout": 1500,
+  "np_min_holdout": 0.0,
+  "dd_max_holdout": 5.0,
+  "seed": 0,
+  "id": "sac_BTCUSD_rapide",
+  "steps": 50000,
+  "segment": 256,
+  "eval_holdout": 2500,
+  "buffer_taille": 20000,
+  "largeur": 128
+}

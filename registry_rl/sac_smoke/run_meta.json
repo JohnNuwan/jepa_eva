@@ -1,0 +1,17 @@
+{
+  "run_id": "sac_smoke",
+  "symbole": "US30.cash",
+  "algo": "sac",
+  "duree_s": 243.4,
+  "nb_champions": 2,
+  "nb_records": 4,
+  "meilleur_holdout": -0.1248,
+  "config": {
+    "id": "sac_smoke",
+    "symbole": "US30.cash",
+    "timeframe": "m15",
+    "steps": 20480,
+    "segment": 512,
+    "seed": 0
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "symbole": "US30.cash",
+  "timeframe": "m15",
+  "frac_train": 0.8,
+  "max_holdout": 1500,
+  "np_min_holdout": 0.0,
+  "dd_max_holdout": 5.0,
+  "seed": 0,
+  "id": "td3_US30_cash_agressif",
+  "steps": 400000,
+  "segment": 512,
+  "eval_holdout": 10000,
+  "bruit_std": 0.2,
+  "bruit_cible": 0.3,
+  "buffer_taille": 200000,
+  "largeur": 256
+}

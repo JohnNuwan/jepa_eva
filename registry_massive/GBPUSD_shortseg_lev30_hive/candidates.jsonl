@@ -1,0 +1,2 @@
+{"run_id": "GBPUSD_shortseg_lev30_hive", "fold": 0, "generation": 0, "fitness": 0.2264, "net_profit": 1.3899, "drawdown": 1.2593, "sortino": 0.0479, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
+{"run_id": "GBPUSD_shortseg_lev30_hive", "fold": 0, "generation": 60, "fitness": 23.6916, "net_profit": 29.005, "drawdown": 5.6334, "sortino": 0.16, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}

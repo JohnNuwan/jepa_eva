@@ -1,0 +1,18 @@
+{
+  "symbole": "USDJPY",
+  "timeframe": "m15",
+  "frac_train": 0.8,
+  "max_holdout": 1500,
+  "np_min_holdout": 0.0,
+  "dd_max_holdout": 5.0,
+  "seed": 0,
+  "id": "sac_USDJPY_explorer",
+  "steps": 300000,
+  "segment": 512,
+  "eval_holdout": 10000,
+  "alpha": 0.5,
+  "alpha_auto": true,
+  "buffer_taille": 200000,
+  "batch": 64,
+  "largeur": 256
+}

@@ -1,0 +1,2 @@
+{"run_id": "US100_cash_longseg_lev30_hive", "fold": 0, "generation": 0, "fitness": 24.2789, "net_profit": 26.8642, "drawdown": 2.5424, "sortino": -0.0214, "win_rate": 100.0, "profit_factor": 2061911.625, "nb_trades": 1.0}
+{"run_id": "US100_cash_longseg_lev30_hive", "fold": 0, "generation": 70, "fitness": 198.6938, "net_profit": 198.5405, "drawdown": 0.0, "sortino": 0.0767, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}

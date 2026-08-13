@@ -1,0 +1,4 @@
+{"run_id": "ppo_BTCUSDT_baseline", "generation": 9, "fitness_train": -0.0053, "fitness": -8.6725, "net_profit": -4.0141, "max_drawdown": 4.6584, "sortino": 0.0, "win_rate": 40.6606, "profit_factor": 0.5227, "nb_trades": 59.0}
+{"run_id": "ppo_BTCUSDT_baseline", "generation": 19, "fitness_train": -0.006, "fitness": 0.6386, "net_profit": 1.0851, "max_drawdown": 0.4465, "sortino": 0.0, "win_rate": 26.7857, "profit_factor": 1.7536, "nb_trades": 7.3333}
+{"run_id": "ppo_BTCUSDT_baseline", "generation": 29, "fitness_train": -0.0032, "fitness": -7.6416, "net_profit": -3.1395, "max_drawdown": 4.5021, "sortino": 0.0, "win_rate": 33.9683, "profit_factor": 0.7095, "nb_trades": 84.0}
+{"run_id": "ppo_BTCUSDT_baseline", "generation": 39, "fitness_train": -0.0055, "fitness": -6.8235, "net_profit": -1.97, "max_drawdown": 4.8536, "sortino": 0.0, "win_rate": 44.9767, "profit_factor": 0.7505, "nb_trades": 71.6667}

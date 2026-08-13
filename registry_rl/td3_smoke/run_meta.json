@@ -1,0 +1,17 @@
+{
+  "run_id": "td3_smoke",
+  "symbole": "US30.cash",
+  "algo": "td3",
+  "duree_s": 116.0,
+  "nb_champions": 1,
+  "nb_records": 4,
+  "meilleur_holdout": 1.3309,
+  "config": {
+    "id": "td3_smoke",
+    "symbole": "US30.cash",
+    "timeframe": "m15",
+    "steps": 20480,
+    "segment": 512,
+    "seed": 0
+  }
+}

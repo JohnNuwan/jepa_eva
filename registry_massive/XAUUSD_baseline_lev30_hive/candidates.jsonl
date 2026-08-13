@@ -1,0 +1,3 @@
+{"run_id": "XAUUSD_baseline_lev30_hive", "fold": 0, "generation": 0, "fitness": 5.3349, "net_profit": 7.8813, "drawdown": 2.4586, "sortino": -0.0439, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
+{"run_id": "XAUUSD_baseline_lev30_hive", "fold": 0, "generation": 20, "fitness": 42.4427, "net_profit": 42.2494, "drawdown": 0.0162, "sortino": 0.1048, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
+{"run_id": "XAUUSD_baseline_lev30_hive", "fold": 0, "generation": 50, "fitness": 70.5236, "net_profit": 70.1094, "drawdown": 0.0, "sortino": 0.2071, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}

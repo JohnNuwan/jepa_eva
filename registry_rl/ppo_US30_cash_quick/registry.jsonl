@@ -1,0 +1,2 @@
+{"run_id": "ppo_US30_cash_quick", "generation": 4, "fitness_train": -0.009, "fitness": 0.0645, "net_profit": 0.4848, "max_drawdown": 0.4203, "sortino": 0.0, "win_rate": 34.0741, "profit_factor": 1.7199, "nb_trades": 8.0, "fichier": "champion_up4.npz"}
+{"run_id": "ppo_US30_cash_quick", "generation": 48, "fitness": 0.0645, "net_profit": 0.4848, "max_drawdown": 0.4203, "sortino": 0.0, "win_rate": 34.0741, "profit_factor": 1.7199, "nb_trades": 8.0, "fichier": "champion_final.npz"}

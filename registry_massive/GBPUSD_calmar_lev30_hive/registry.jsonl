@@ -1,0 +1,2 @@
+{"run_id": "GBPUSD_calmar_lev30_hive", "fold": 0, "generation": 19, "fitness_train": -2.4638, "fitness": 13.7032, "net_profit": 8.9297, "drawdown": 2.078, "sortino": -0.0005, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_f0_g19.npz"}
+{"run_id": "GBPUSD_calmar_lev30_hive", "fold": "final", "generation": 250, "fitness_train": -0.004486921243369579, "fitness": -0.0061, "net_profit": -0.0007, "drawdown": 0.0011, "sortino": -0.0051, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_final.npz"}

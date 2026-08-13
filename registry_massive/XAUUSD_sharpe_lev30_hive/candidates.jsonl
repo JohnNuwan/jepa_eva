@@ -1,0 +1,2 @@
+{"run_id": "XAUUSD_sharpe_lev30_hive", "fold": 0, "generation": 0, "fitness": 5.3569, "net_profit": 7.8813, "drawdown": 2.4586, "sortino": -0.0439, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
+{"run_id": "XAUUSD_sharpe_lev30_hive", "fold": 0, "generation": 50, "fitness": 67.2046, "net_profit": 66.9698, "drawdown": 0.0, "sortino": 0.2114, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}

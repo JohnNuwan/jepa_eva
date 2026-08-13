@@ -1,0 +1,3 @@
+{"run_id": "XAUUSD_smallgru_lev30_hive", "fold": 0, "generation": 0, "fitness": 2.2332, "net_profit": 3.9703, "drawdown": 1.8633, "sortino": 0.0631, "win_rate": 100.0, "profit_factor": 16067540.0, "nb_trades": 1.0}
+{"run_id": "XAUUSD_smallgru_lev30_hive", "fold": 0, "generation": 50, "fitness": 64.1506, "net_profit": 63.667, "drawdown": 0.0, "sortino": 0.2418, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
+{"run_id": "XAUUSD_smallgru_lev30_hive", "fold": 0, "generation": 100, "fitness": 149.5514, "net_profit": 176.0821, "drawdown": 26.7069, "sortino": 0.0881, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}

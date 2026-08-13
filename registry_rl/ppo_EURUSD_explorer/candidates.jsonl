@@ -1,0 +1,6 @@
+{"run_id": "ppo_EURUSD_explorer", "generation": 9, "fitness_train": -0.0048, "fitness": -3.0452, "net_profit": -1.1295, "max_drawdown": 1.222, "sortino": -0.3468, "win_rate": 34.4631, "profit_factor": 0.6237, "nb_trades": 46.0}
+{"run_id": "ppo_EURUSD_explorer", "generation": 19, "fitness_train": -0.0064, "fitness": -1.9741, "net_profit": -0.7081, "max_drawdown": 0.7887, "sortino": -0.2387, "win_rate": 27.0053, "profit_factor": 0.6719, "nb_trades": 26.0}
+{"run_id": "ppo_EURUSD_explorer", "generation": 29, "fitness_train": -0.0069, "fitness": 1.0964, "net_profit": 1.0494, "max_drawdown": 0.1678, "sortino": 0.1073, "win_rate": 66.6667, "profit_factor": 2.8085, "nb_trades": 5.0}
+{"run_id": "ppo_EURUSD_explorer", "generation": 39, "fitness_train": -0.0059, "fitness": 0.6575, "net_profit": 1.4884, "max_drawdown": 0.4656, "sortino": -0.1826, "win_rate": 46.6667, "profit_factor": 3.9822, "nb_trades": 8.6667}
+{"run_id": "ppo_EURUSD_explorer", "generation": 49, "fitness_train": -0.0048, "fitness": 0.8672, "net_profit": 1.1871, "max_drawdown": 0.5346, "sortino": 0.1073, "win_rate": 66.6667, "profit_factor": 47.1008, "nb_trades": 3.3333}
+{"run_id": "ppo_EURUSD_explorer", "generation": 59, "fitness_train": -0.0096, "fitness": -1.6216, "net_profit": -0.4811, "max_drawdown": 1.1493, "sortino": 0.0044, "win_rate": 38.7879, "profit_factor": 0.7829, "nb_trades": 7.0}

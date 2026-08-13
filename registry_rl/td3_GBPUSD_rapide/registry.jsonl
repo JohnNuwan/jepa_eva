@@ -1,0 +1,1 @@
+{"run_id": "td3_GBPUSD_rapide", "pas": 50000, "fitness": -4.0329, "net_profit": -2.0078, "max_drawdown": 2.0133, "sortino": -0.0059, "win_rate": 18.8, "profit_factor": 0.0599, "nb_trades": 124.6667, "fichier": "champion_final.npz"}

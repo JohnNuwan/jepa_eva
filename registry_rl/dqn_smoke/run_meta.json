@@ -1,0 +1,17 @@
+{
+  "run_id": "dqn_smoke",
+  "symbole": "US30.cash",
+  "algo": "dqn",
+  "duree_s": 64.0,
+  "nb_champions": 0,
+  "nb_records": 4,
+  "meilleur_holdout": -Infinity,
+  "config": {
+    "id": "dqn_smoke",
+    "symbole": "US30.cash",
+    "timeframe": "m15",
+    "steps": 20480,
+    "segment": 512,
+    "seed": 0
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "run_id": "EURUSD_wr_lev30_hive",
+  "symbole": "EURUSD",
+  "duree_s": 51.4,
+  "nb_champions": 5,
+  "nb_records": 2,
+  "meilleur_holdout": 0.2465,
+  "config": {
+    "symbole": "EURUSD",
+    "timeframe": "m15",
+    "generations": 250,
+    "segment": 512,
+    "taille_pop": 64,
+    "nb_elites": 16,
+    "taux_mutation": 0.1,
+    "sigma_mutation": 0.02,
+    "dim_cache": 256,
+    "dim_action": 8,
+    "cout_transaction": 0.0002,
+    "fitness": {
+      "sortino": 1.0,
+      "sharpe": 0.0,
+      "dd": 1.5,
+      "np": 0.5,
+      "pf": 0.0,
+      "wr": 1.5
+    },
+    "frac_train": 0.8,
+    "eval_holdout": 10,
+    "walkforward": 1,
+    "max_holdout": 1500,
+    "np_min_holdout": 0.0,
+    "dd_max_holdout": 5.0,
+    "seed": 0,
+    "id": "EURUSD_wr_lev30_hive",
+    "levier": 30.0
+  }
+}

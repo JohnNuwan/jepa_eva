@@ -1,0 +1,2 @@
+{"run_id": "ppo_EURUSD_explorer", "generation": 29, "fitness_train": -0.0069, "fitness": 1.0964, "net_profit": 1.0494, "max_drawdown": 0.1678, "sortino": 0.1073, "win_rate": 66.6667, "profit_factor": 2.8085, "nb_trades": 5.0, "fichier": "champion_up29.npz"}
+{"run_id": "ppo_EURUSD_explorer", "generation": 65, "fitness": 1.0964, "net_profit": 1.0494, "max_drawdown": 0.1678, "sortino": 0.1073, "win_rate": 66.6667, "profit_factor": 2.8085, "nb_trades": 5.0, "fichier": "champion_final.npz"}

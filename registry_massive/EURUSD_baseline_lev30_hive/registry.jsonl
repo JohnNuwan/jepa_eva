@@ -1,0 +1,2 @@
+{"run_id": "EURUSD_baseline_lev30_hive", "fold": 0, "generation": 119, "fitness_train": 16.3354, "fitness": 4.1342, "net_profit": 8.5933, "drawdown": 4.3851, "sortino": -0.037, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_f0_g119.npz"}
+{"run_id": "EURUSD_baseline_lev30_hive", "fold": "final", "generation": 250, "fitness_train": -0.008392772637307644, "fitness": -0.0099, "net_profit": -0.001, "drawdown": 0.0012, "sortino": -0.0038, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_final.npz"}

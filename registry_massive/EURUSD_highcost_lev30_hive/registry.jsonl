@@ -1,0 +1,1 @@
+{"run_id": "EURUSD_highcost_lev30_hive", "fold": "final", "generation": 250, "fitness_train": 1.255157470703125, "fitness": 33.868, "net_profit": 45.3233, "drawdown": 11.4118, "sortino": -0.0217, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_final.npz"}

@@ -1,0 +1,2 @@
+{"run_id": "US100_cash_biggru_lev30_hive", "fold": 0, "generation": 9, "fitness_train": -2.3365, "fitness": 45.0441, "net_profit": 44.6537, "drawdown": 0.0, "sortino": 0.1952, "win_rate": 50.0, "profit_factor": 1.24, "nb_trades": 2.0, "fichier": "champion_f0_g9.npz"}
+{"run_id": "US100_cash_biggru_lev30_hive", "fold": "final", "generation": 250, "fitness_train": 165.08206176757812, "fitness": -31.3534, "net_profit": -11.2176, "drawdown": 20.524, "sortino": 0.1941, "win_rate": 45.4545, "profit_factor": 0.0767, "nb_trades": 11.0, "fichier": "champion_final.npz"}

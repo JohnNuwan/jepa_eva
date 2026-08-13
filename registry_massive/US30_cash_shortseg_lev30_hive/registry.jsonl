@@ -1,0 +1,1 @@
+{"run_id": "US30_cash_shortseg_lev30_hive", "fold": "final", "generation": 250, "fitness_train": -5.488198280334473, "fitness": 10.9396, "net_profit": 34.5576, "drawdown": 23.7375, "sortino": 0.0598, "win_rate": 33.3333, "profit_factor": 4.7165, "nb_trades": 6.0, "fichier": "champion_final.npz"}

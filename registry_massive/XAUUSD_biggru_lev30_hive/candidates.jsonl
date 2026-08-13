@@ -1,0 +1,2 @@
+{"run_id": "XAUUSD_biggru_lev30_hive", "fold": 0, "generation": 0, "fitness": 9.6861, "net_profit": 12.6091, "drawdown": 2.8566, "sortino": -0.0332, "win_rate": 50.0, "profit_factor": 1658.5789, "nb_trades": 2.0}
+{"run_id": "XAUUSD_biggru_lev30_hive", "fold": 0, "generation": 50, "fitness": 68.9597, "net_profit": 68.5387, "drawdown": 0.0, "sortino": 0.2105, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}

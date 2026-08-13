@@ -1,0 +1,3 @@
+{"run_id": "ppo_BTCUSDT_quick", "generation": 24, "fitness_train": -0.0101, "fitness": 0.054, "net_profit": 0.1608, "max_drawdown": 0.1068, "sortino": 0.0, "win_rate": 22.2222, "profit_factor": 1.1322, "nb_trades": 1.0, "fichier": "champion_up24.npz"}
+{"run_id": "ppo_BTCUSDT_quick", "generation": 39, "fitness_train": -0.0113, "fitness": 8.7768, "net_profit": 4.2271, "max_drawdown": 0.0, "sortino": 2.2748, "win_rate": 60.2899, "profit_factor": 2.5045, "nb_trades": 27.6667, "fichier": "champion_up39.npz"}
+{"run_id": "ppo_BTCUSDT_quick", "generation": 48, "fitness": 8.7768, "net_profit": 4.2271, "max_drawdown": 0.0, "sortino": 2.2748, "win_rate": 60.2899, "profit_factor": 2.5045, "nb_trades": 27.6667, "fichier": "champion_final.npz"}

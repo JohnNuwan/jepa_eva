@@ -1,0 +1,2 @@
+{"run_id": "US100_cash_smallgru_lev30_hive", "fold": 0, "generation": 0, "fitness": 7.1872, "net_profit": 7.2164, "drawdown": 0.2293, "sortino": 0.1001, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
+{"run_id": "US100_cash_smallgru_lev30_hive", "fold": 0, "generation": 40, "fitness": 64.5002, "net_profit": 78.8025, "drawdown": 14.26, "sortino": -0.0211, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}

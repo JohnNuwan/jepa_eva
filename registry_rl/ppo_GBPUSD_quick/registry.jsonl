@@ -1,0 +1,1 @@
+{"run_id": "ppo_GBPUSD_quick", "generation": 48, "fitness": -7.8541, "net_profit": -3.5428, "max_drawdown": 3.698, "sortino": -0.3066, "win_rate": 28.2535, "profit_factor": 0.3914, "nb_trades": 103.6667, "fichier": "champion_final.npz"}

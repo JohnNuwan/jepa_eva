@@ -1,0 +1,3 @@
+{"run_id": "td3_US30_cash_rapide", "pas": 37500, "perte_critique": 0.0, "perte_acteur": 0.06722, "fitness": 0.348, "net_profit": 1.3456, "max_drawdown": 0.8289, "sortino": -0.0844, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_p37500.npz"}
+{"run_id": "td3_US30_cash_rapide", "pas": 47500, "perte_critique": 0.0, "perte_acteur": 0.05937, "fitness": 0.4193, "net_profit": 1.4168, "max_drawdown": 0.8289, "sortino": -0.0844, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_p47500.npz"}
+{"run_id": "td3_US30_cash_rapide", "pas": 50000, "fitness": 0.4193, "net_profit": 1.4168, "max_drawdown": 0.8289, "sortino": -0.0844, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_final.npz"}

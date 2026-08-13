@@ -1,0 +1,2 @@
+{"run_id": "EURUSD_shortseg_lev30_hive", "fold": 0, "generation": 109, "fitness_train": -10.5422, "fitness": 4.8804, "net_profit": 9.8228, "drawdown": 4.8699, "sortino": -0.0363, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_f0_g109.npz"}
+{"run_id": "EURUSD_shortseg_lev30_hive", "fold": "final", "generation": 250, "fitness_train": 0.0, "fitness": 0.0, "net_profit": 0.0, "drawdown": 0.0, "sortino": 0.0, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 4.0, "fichier": "champion_final.npz"}

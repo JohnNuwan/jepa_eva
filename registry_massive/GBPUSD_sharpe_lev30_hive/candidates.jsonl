@@ -1,0 +1,2 @@
+{"run_id": "GBPUSD_sharpe_lev30_hive", "fold": 0, "generation": 0, "fitness": 36.9239, "net_profit": 37.5364, "drawdown": 0.8325, "sortino": 0.1668, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
+{"run_id": "GBPUSD_sharpe_lev30_hive", "fold": 0, "generation": 30, "fitness": 55.8349, "net_profit": 56.579, "drawdown": 0.8748, "sortino": 0.0962, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}

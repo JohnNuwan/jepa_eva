@@ -1,0 +1,1 @@
+{"run_id": "GER40_cash_calmar_lev30_hive", "fold": "final", "generation": 250, "fitness_train": 28.363174438476562, "fitness": -158.8441, "net_profit": -27.0484, "drawdown": 52.3836, "sortino": 0.0397, "win_rate": 29.4118, "profit_factor": 2.2834, "nb_trades": 17.0, "fichier": "champion_final.npz"}

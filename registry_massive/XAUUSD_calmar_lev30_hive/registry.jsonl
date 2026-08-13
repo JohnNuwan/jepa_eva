@@ -1,0 +1,1 @@
+{"run_id": "XAUUSD_calmar_lev30_hive", "fold": "final", "generation": 250, "fitness_train": -238.87078857421875, "fitness": -389.4856, "net_profit": -97.1092, "drawdown": 97.6368, "sortino": 0.0128, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_final.npz"}

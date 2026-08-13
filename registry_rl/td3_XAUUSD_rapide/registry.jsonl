@@ -1,0 +1,3 @@
+{"run_id": "td3_XAUUSD_rapide", "pas": 5000, "perte_critique": 0.0, "perte_acteur": 0.16785, "fitness": 1.5786, "net_profit": 2.5875, "max_drawdown": 1.9157, "sortino": 0.4534, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_p5000.npz"}
+{"run_id": "td3_XAUUSD_rapide", "pas": 7500, "perte_critique": 0.0, "perte_acteur": 0.1659, "fitness": 1.9677, "net_profit": 3.8325, "max_drawdown": 1.0877, "sortino": -0.3886, "win_rate": 32.9793, "profit_factor": 2.5035, "nb_trades": 39.6667, "fichier": "champion_p7500.npz"}
+{"run_id": "td3_XAUUSD_rapide", "pas": 50000, "fitness": 1.9677, "net_profit": 3.8325, "max_drawdown": 1.0877, "sortino": -0.3886, "win_rate": 32.9793, "profit_factor": 2.5035, "nb_trades": 39.6667, "fichier": "champion_final.npz"}

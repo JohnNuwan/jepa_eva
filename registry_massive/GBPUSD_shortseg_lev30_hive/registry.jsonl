@@ -1,0 +1,2 @@
+{"run_id": "GBPUSD_shortseg_lev30_hive", "fold": 0, "generation": 9, "fitness_train": -12.7969, "fitness": 14.0796, "net_profit": 18.1951, "drawdown": 4.1154, "sortino": -0.0, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_f0_g9.npz"}
+{"run_id": "GBPUSD_shortseg_lev30_hive", "fold": "final", "generation": 250, "fitness_train": 0.0, "fitness": 0.0, "net_profit": 0.0, "drawdown": 0.0, "sortino": 0.0, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_final.npz"}

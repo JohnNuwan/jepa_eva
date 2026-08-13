@@ -14,6 +14,7 @@ Exécution du test de vitesse :
     PYTHONPATH=. venv/bin/python jax_arena.py
 """
 
+from __future__ import annotations
 
 import time
 from functools import partial
@@ -38,6 +39,7 @@ NB_ITERATIONS_CEM: int = 6
 HORIZON_CEM: int = 5
 GAMMA: float = 0.99
 COUT_TRANSACTION: float = 0.0002
+LEVIER: float = 1.0
 FENETRE_SORTINO: int = 256
 CAPITAL_INITIAL: float = 100_000.0
 EPS: float = 1e-8
@@ -479,12 +481,12 @@ def _pas_simulation(
     """
     signal = jnp.tanh(action[0])
     variation = signal - etat.position
-    cout = jnp.abs(variation) * COUT_TRANSACTION
+    cout = jnp.abs(variation) * COUT_TRANSACTION * LEVIER
     # Rendement par barre réaliste : position × variation relative du prix
     # depuis la barre PRÉCÉDENTE (mark-to-market) — rendements bornés.
     prix_precedent = jnp.maximum(etat.prix_entree, EPS)
     rendement_prix = (prix - prix_precedent) / prix_precedent
-    retour_net = etat.position * rendement_prix - cout
+    retour_net = etat.position * rendement_prix * LEVIER - cout
     nouveau_cash = etat.cash * (1.0 + retour_net)
     historique = jnp.roll(etat.historique_retours, shift=-1)
     historique = historique.at[-1].set(retour_net)

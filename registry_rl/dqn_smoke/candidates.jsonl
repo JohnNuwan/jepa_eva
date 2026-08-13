@@ -1,0 +1,4 @@
+{"run_id": "dqn_smoke", "pas": 5000, "eps": 0.02, "perte": 0.0, "fitness": -4.2406, "net_profit": -1.6274, "max_drawdown": 2.8386, "sortino": 0.1127, "win_rate": 43.6053, "profit_factor": 0.6826, "nb_trades": 39.3333}
+{"run_id": "dqn_smoke", "pas": 10000, "eps": 0.02, "perte": 0.0, "fitness": -11.0722, "net_profit": -5.4744, "max_drawdown": 5.8232, "sortino": 0.1127, "win_rate": 36.5475, "profit_factor": 0.414, "nb_trades": 75.0}
+{"run_id": "dqn_smoke", "pas": 15000, "eps": 0.02, "perte": 0.0, "fitness": -22.5455, "net_profit": -11.9566, "max_drawdown": 12.1162, "sortino": 0.7637, "win_rate": 25.075, "profit_factor": 0.249, "nb_trades": 206.0}
+{"run_id": "dqn_smoke", "pas": 20000, "eps": 0.02, "perte": 0.0, "fitness": -16.581, "net_profit": -8.1497, "max_drawdown": 8.2626, "sortino": -0.0844, "win_rate": 29.2397, "profit_factor": 0.5226, "nb_trades": 268.0}

@@ -1,0 +1,3 @@
+{"run_id": "GBPUSD_biggru_lev30_hive", "fold": 0, "generation": 0, "fitness": 34.0731, "net_profit": 34.5816, "drawdown": 0.8323, "sortino": 0.1619, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
+{"run_id": "GBPUSD_biggru_lev30_hive", "fold": 0, "generation": 20, "fitness": 39.4423, "net_profit": 42.5576, "drawdown": 3.2703, "sortino": 0.0775, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
+{"run_id": "GBPUSD_biggru_lev30_hive", "fold": 0, "generation": 30, "fitness": 60.5316, "net_profit": 61.275, "drawdown": 0.9357, "sortino": 0.0962, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}

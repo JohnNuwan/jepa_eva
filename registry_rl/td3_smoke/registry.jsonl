@@ -1,0 +1,2 @@
+{"run_id": "td3_smoke", "pas": 10000, "perte_critique": 0.0, "perte_acteur": 0.06658, "fitness": 1.3309, "net_profit": 2.3503, "max_drawdown": 0.8376, "sortino": -0.0909, "win_rate": 83.3333, "profit_factor": 0.4161, "nb_trades": 1.6667, "fichier": "champion_p10000.npz"}
+{"run_id": "td3_smoke", "pas": 20480, "fitness": 1.3309, "net_profit": 2.3503, "max_drawdown": 0.8376, "sortino": -0.0909, "win_rate": 83.3333, "profit_factor": 0.4161, "nb_trades": 1.6667, "fichier": "champion_final.npz"}

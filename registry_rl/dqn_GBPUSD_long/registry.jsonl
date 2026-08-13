@@ -1,0 +1,1 @@
+{"run_id": "dqn_GBPUSD_long", "pas": 500000, "fitness": -10.4568, "net_profit": -4.8592, "max_drawdown": 4.9335, "sortino": -0.332, "win_rate": 13.8053, "profit_factor": 0.1087, "nb_trades": 109.6667, "fichier": "champion_final.npz"}

@@ -1,0 +1,2 @@
+{"run_id": "EURUSD_highcost_lev30_hive", "fold": 0, "generation": 0, "fitness": 21.1885, "net_profit": 28.0611, "drawdown": 6.9488, "sortino": 0.038, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}
+{"run_id": "EURUSD_highcost_lev30_hive", "fold": 0, "generation": 30, "fitness": 29.7998, "net_profit": 32.095, "drawdown": 2.5219, "sortino": 0.1134, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}

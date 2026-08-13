@@ -1316,3 +1316,134 @@ class BeeRLStrategy:
 
     def system_health_report(self):
         return self.monitor.check_health()
+
+# AUTO-IMPL: ai-governance-finance
+# Ajout du système de gouvernance AI via DeepSeek V4
+# Insérer ce bloc après les imports ou avant la classe principale
+...
+
+# AUTO-IMPL: ai-governance-finance
+# ===== Ajout: Gouvernance, Audit et Contrôle des décisions IA =====
+import time
+import logging
+from functools import wraps
+
+logger = logging.getLogger(__name__)
+
+class DecisionAudit:
+    """Enregistre et vérifie les décisions de l'IA."""
+    def __init__(self, max_daily_trades=10, max_position_size=0.1, risk_limit=0.02):
+        self.max_daily_trades = max_daily_trades
+        self.max_position_size = max_position_size
+        self.risk_limit = risk_limit
+        self.trade_log = []
+    
+    def log_decision(self, state, action, reward=None, metadata=None):
+        entry = {
+            'timestamp': time.time(),
+            'state': state,
+            'action': action,
+            'reward': reward,
+            'metadata': metadata
+        }
+        self.trade_log.append(entry)
+        logger.info(f"Décision enregistrée: action={action}")
+    
+    def check_governance(self, state, action):
+        # Règle: pas de trading excessif
+        today_trades = sum(1 for t in self.trade_log 
+                           if time.localtime(t['timestamp']).tm_yday == time.localtime().tm_yday)
+        if today_trades >= self.max_daily_trades:
+            raise PermissionError(f"Limite de trades journaliers atteinte: {today_trades}")
+        # Règle: taille de position
+        if abs(action) > self.max_position_size:
+            raise ValueError(f"Taille de position trop grande: {action}")
+        # Règle: risque (si action est un pourcentage du capital)
+        if hasattr(state, 'portfolio_value') and state.portfolio_value > 0:
+            risk = abs(action) / state.portfolio_value
+            if risk > self.risk_limit:
+                raise ValueError(f"Risque excessif: {risk:.2%}")
+        return True
+    
+    def audit_trail(self, limit=100):
+        return self.trade_log[-limit:]
+
+# Instance globale partagée
+_audit = DecisionAudit()
+
+def governance_audit(func):
+    """Décorateur pour auditer et contrôler les décisions de l'IA."""
+    @wraps(func)
+    def wrapper(self, state, *args, **kwargs):
+        action = func(self, state, *args, **kwargs)
+        # Vérifier les règles de gouvernance
+        _audit.check_governance(state, action)
+        # Enregistrer
+        _audit.log_decision(state, action)
+        return action
+    return wrapper
+
+# Exemple d'utilisation (décorer votre méthode principale) :
+# class RLStrategy:
+#     @governance_audit
+#     def get_action(self, state):
+#         # ... votre logique ...
+
+# AUTO-IMPL: argus
+# Ajouter après les imports existants
+import time
+import threading
+from collections import deque
+from typing import Dict, List
+
+class RuntimeMonitor:
+    def __init__(self, window_size: int = 60):
+        self.latency_buffer = deque(maxlen=window_size)
+        self.error_count = 0
+        self._lock = threading.Lock()
+        self._alert_threshold = 0.5  # secondes
+        self._max_errors = 10
+        
+    def record_execution(self, start_time: float) -> None:
+        latency = time.time() - start_time
+        with self._lock:
+            self.latency_buffer.append(latency)
+            if latency > self._alert_threshold:
+                self._trigger_alert(f"High latency detected: {latency:.3f}s")
+                
+    def record_error(self, error_type: str) -> None:
+        with self._lock:
+            self.error_count += 1
+            if self.error_count > self._max_errors:
+                self._trigger_alert(f"Critical: {self.error_count} errors in window")
+                
+    def _trigger_alert(self, message: str) -> None:
+        # Implémentez votre système d'alerte (log, email, etc.)
+        import logging
+        logging.warning(f"[RUNTIME_MONITOR] {message}")
+        
+    def get_stats(self) -> Dict:
+        with self._lock:
+            return {
+                "avg_latency": sum(self.latency_buffer) / max(len(self.latency_buffer), 1),
+                "max_latency": max(self.latency_buffer) if self.latency_buffer else 0,
+                "error_count": self.error_count,
+                "buffer_size": len(self.latency_buffer)
+            }
+
+# Initialisation globale du moniteur
+monitor = RuntimeMonitor(window_size=120)
+
+# Exemple d'utilisation dans votre logique existante (à adapter) :
+# Dans la méthode execute_trade() ou run_strategy():
+#   start = time.time()
+#   try:
+#       executer votre code de trading
+#       monitor.record_execution(start)
+#   except Exception as e:
+#       monitor.record_error(type(e).__name__)
+
+# Pour vider les stats périodiquement (ajouter dans la boucle principale)
+# stats = monitor.get_stats()
+# if stats["avg_latency"] > 1.0:
+#     print(f"Anomalie détectée: {stats}")

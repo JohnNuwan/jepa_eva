@@ -1,0 +1,1 @@
+{"run_id": "US30_cash_biggru_lev30_hive", "fold": "final", "generation": 250, "fitness_train": -31.009458541870117, "fitness": 14.4595, "net_profit": 38.0775, "drawdown": 23.7376, "sortino": 0.0598, "win_rate": 50.0, "profit_factor": 6.1494, "nb_trades": 4.0, "fichier": "champion_final.npz"}

@@ -1,0 +1,1 @@
+{"run_id": "US30_cash_baseline_lev30_hive", "fold": "final", "generation": 250, "fitness_train": -31.009458541870117, "fitness": 16.8204, "net_profit": 40.4384, "drawdown": 23.7375, "sortino": 0.0598, "win_rate": 50.0, "profit_factor": 8.8381, "nb_trades": 4.0, "fichier": "champion_final.npz"}

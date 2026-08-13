@@ -1,0 +1,38 @@
+{
+  "run_id": "GBPUSD_lowcost_lev30_hive",
+  "symbole": "GBPUSD",
+  "duree_s": 51.5,
+  "nb_champions": 3,
+  "nb_records": 3,
+  "meilleur_holdout": 26.745,
+  "config": {
+    "symbole": "GBPUSD",
+    "timeframe": "m15",
+    "generations": 250,
+    "segment": 512,
+    "taille_pop": 64,
+    "nb_elites": 16,
+    "taux_mutation": 0.1,
+    "sigma_mutation": 0.02,
+    "dim_cache": 256,
+    "dim_action": 8,
+    "cout_transaction": 2e-05,
+    "fitness": {
+      "sortino": 1.5,
+      "sharpe": 0.0,
+      "dd": 1.0,
+      "np": 1.5,
+      "pf": 0.0,
+      "wr": 0.0
+    },
+    "frac_train": 0.8,
+    "eval_holdout": 10,
+    "walkforward": 1,
+    "max_holdout": 1500,
+    "np_min_holdout": 0.0,
+    "dd_max_holdout": 5.0,
+    "seed": 0,
+    "id": "GBPUSD_lowcost_lev30_hive",
+    "levier": 30.0
+  }
+}

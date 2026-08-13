@@ -1,0 +1,1 @@
+{"run_id": "GER40_cash_wr_lev30_hive", "fold": "final", "generation": 250, "fitness_train": -51.73529052734375, "fitness": -99.9766, "net_profit": -32.6026, "drawdown": 56.0127, "sortino": 0.0104, "win_rate": 22.2222, "profit_factor": 1.3249, "nb_trades": 9.0, "fichier": "champion_final.npz"}

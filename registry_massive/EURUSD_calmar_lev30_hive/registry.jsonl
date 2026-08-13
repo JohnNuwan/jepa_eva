@@ -1,0 +1,2 @@
+{"run_id": "EURUSD_calmar_lev30_hive", "fold": 0, "generation": 129, "fitness_train": -8.0829, "fitness": 7.8286, "net_profit": 8.3602, "drawdown": 4.4366, "sortino": -0.0373, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_f0_g129.npz"}
+{"run_id": "EURUSD_calmar_lev30_hive", "fold": "final", "generation": 250, "fitness_train": -0.0026838902849704027, "fitness": -0.0055, "net_profit": -0.0009, "drawdown": 0.0011, "sortino": -0.0031, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_final.npz"}

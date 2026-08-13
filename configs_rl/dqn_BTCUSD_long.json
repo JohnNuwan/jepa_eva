@@ -1,0 +1,18 @@
+{
+  "symbole": "BTCUSD",
+  "timeframe": "m15",
+  "frac_train": 0.8,
+  "max_holdout": 1500,
+  "np_min_holdout": 0.0,
+  "dd_max_holdout": 5.0,
+  "seed": 0,
+  "id": "dqn_BTCUSD_long",
+  "steps": 500000,
+  "segment": 512,
+  "eval_holdout": 10000,
+  "double_dqn": true,
+  "eps_decay": 10000,
+  "buffer_taille": 200000,
+  "batch": 64,
+  "largeur": 256
+}
