@@ -1447,3 +1447,256 @@ monitor = RuntimeMonitor(window_size=120)
 # stats = monitor.get_stats()
 # if stats["avg_latency"] > 1.0:
 #     print(f"Anomalie détectée: {stats}")
+
+# AUTO-IMPL: ai-governance-finance
+# AI Governance Framework for Trading Decisions
+# Add this code to strategy_rl.py without modifying existing logic
+
+class AIGovernance:
+    """
+    Governance framework to enforce rules on RL trading decisions.
+    Overridable rules: risk limits, position size, drawdown, regulatory checks.
+    """
+    def __init__(self, config=None):
+        defaults = {
+            'max_position_size': 0.1,          # fraction of portfolio
+            'max_drawdown': 0.2,               # max allowed drawdown fraction
+            'min_confidence': 0.6,             # probability threshold for action
+            'allowed_actions': [0, 1, 2],      # e.g., hold, buy, sell
+            'regulatory_blacklist': [],        # symbols not allowed
+            'cooldown_steps': 5,               # min steps between same direction trades
+        }
+        self.config = {**defaults, **(config or {})}
+        self.last_trade_step = -self.config['cooldown_steps']
+        self.last_trade_action = None
+
+    def approve(self, action, state, step, portfolio_value, current_drawdown):
+        """
+        Validate a proposed action given current state.
+        Returns (approved_action, reason) where approved_action is action or a safe fallback.
+        """
+        # Action space check
+        if action not in self.config['allowed_actions']:
+            return (0, "Action not allowed")
+
+        # Confidence check (if state includes action probabilities)
+        if 'prob' in state and state['prob'][action] < self.config['min_confidence']:
+            return (0, "Confidence too low")
+
+        # Position size check (if state includes proposed size)
+        if 'size' in state and state['size'] > self.config['max_position_size'] * portfolio_value:
+            return (0, "Position size exceeds limit")
+
+        # Drawdown check
+        if current_drawdown > self.config['max_drawdown']:
+            return (0, "Max drawdown exceeded")
+
+        # Cooldown check (prevent frequent same-direction trades)
+        if action != 0 and action == self.last_trade_action and \
+           step - self.last_trade_step < self.config['cooldown_steps']:
+            return (0, "Cooldown active")
+
+        # Regulatory blacklist
+        symbol = state.get('symbol', None)
+        if symbol and symbol in self.config['regulatory_blacklist']:
+            return (0, "Symbol blacklisted")
+
+        # Update last trade info if action is not hold
+        if action != 0:
+            self.last_trade_step = step
+            self.last_trade_action = action
+
+        return (action, "Approved")
+
+# Integration example: assume RL agent has method choose_action(state)
+# In your existing code, replace direct action execution with:
+# governance = AIGovernance()  # instantiate once in the class __init__
+# action = agent.choose_action(state)
+# approved_action, reason = governance.approve(action, state, step, portfolio_value, drawdown)
+# Then use approved_action for trading
+
+# AUTO-IMPL: argus
+import time
+import numpy as np
+from collections import deque
+
+class PerformanceMonitor:
+    """Real-time monitoring of performance and anomalies."""
+    def __init__(self, window_size=100, anomaly_threshold=3.0):
+        self.window_size = window_size
+        self.anomaly_threshold = anomaly_threshold
+        self.returns = deque(maxlen=window_size)
+        self.equity_curve = []
+        self.trade_log = []
+        self.start_time = time.time()
+        self.anomalies = []
+        self.metrics = {}
+
+    def update(self, reward, equity, trade_info=None):
+        """Call after each step with reward, equity, optional trade info."""
+        self.returns.append(reward)
+        self.equity_curve.append(equity)
+        if trade_info:
+            self.trade_log.append(trade_info)
+        self._check_anomalies(reward, equity)
+        self._compute_metrics()
+
+    def _check_anomalies(self, reward, equity):
+        if len(self.returns) < 10:
+            return
+        mean = np.mean(self.returns)
+        std = np.std(self.returns)
+        if std > 0 and abs(reward - mean) > self.anomaly_threshold * std:
+            anomaly = {
+                'time': time.time() - self.start_time,
+                'reward': reward,
+                'equity': equity,
+                'z_score': (reward - mean) / std
+            }
+            self.anomalies.append(anomaly)
+            print(f"⚠️ Anomaly detected: {anomaly}")
+
+    def _compute_metrics(self):
+        if len(self.equity_curve) < 2:
+            return
+        equity = np.array(self.equity_curve)
+        returns = np.diff(equity) / equity[:-1]
+        self.metrics['total_return'] = (equity[-1] - equity[0]) / equity[0]
+        self.metrics['sharpe_ratio'] = (np.mean(returns) / (np.std(returns) + 1e-8)) * np.sqrt(252)
+        self.metrics['max_drawdown'] = np.max(np.maximum.accumulate(equity) - equity) / np.maximum.accumulate(equity)[-1]
+        self.metrics['num_trades'] = len(self.trade_log)
+        self.metrics['num_anomalies'] = len(self.anomalies)
+        self.metrics['uptime'] = time.time() - self.start_time
+
+    def get_report(self):
+        return self.metrics
+
+    def reset(self):
+        self.returns.clear()
+        self.equity_curve.clear()
+        self.trade_log.clear()
+        self.anomalies.clear()
+        self.start_time = time.time()
+        self.metrics = {}
+
+# AUTO-IMPL: argus
+import time
+import numpy as np
+from collections import deque
+
+class ArgusOnBee:
+    def __init__(self, window_size=100, threshold_std=3.0):
+        self.window_size = window_size
+        self.threshold_std = threshold_std
+        self.latency_buffer = deque(maxlen=window_size)
+        self.execution_times = {}
+        self.symbols = ["USDJPY", "US30", "US100", "GER40"]
+        
+    def monitor_execution(self, symbol, order_id, start_time):
+        if symbol not in self.symbols:
+            return
+        latency = time.time() - start_time
+        self.latency_buffer.append(latency)
+        self.execution_times[order_id] = latency
+        
+        # Anomaly detection
+        if len(self.latency_buffer) >= 30:
+            mean = np.mean(self.latency_buffer)
+            std = np.std(self.latency_buffer)
+            if abs(latency - mean) > self.threshold_std * std:
+                print(f"⚠ ANOMALY: {symbol} order {order_id} latency {latency:.4f}s (mean {mean:.4f}s, std {std:.4f}s)")
+                self.trigger_alert(symbol, order_id, latency)
+        return latency
+
+    def trigger_alert(self, symbol, order_id, latency):
+        # Placeholder for alert system (email, slack, etc.)
+        print(f"🚨 ARGUS ALERT: {symbol} order {order_id} latency {latency:.4f}s exceeds threshold")
+
+    def get_latency_stats(self):
+        if len(self.latency_buffer) == 0:
+            return {"mean": 0, "std": 0, "max": 0, "min": 0, "count": 0}
+        return {
+            "mean": np.mean(self.latency_buffer),
+            "std": np.std(self.latency_buffer),
+            "max": np.max(self.latency_buffer),
+            "min": np.min(self.latency_buffer),
+            "count": len(self.latency_buffer)
+        }
+
+# Initialize global Argus instance
+argus = ArgusOnBee(window_size=100, threshold_std=3.0)
+
+# AUTO-IMPL: argus
+import json
+import logging
+from datetime import datetime
+from typing import Optional
+
+class ArgusMonitor:
+    """Argus integration for live USDJPY/US100 trade monitoring on TheHive"""
+    
+    def __init__(self, thehive_url: str, api_key: str, alert_template_path: str = "argus_template.json"):
+        self.thehive_url = thehive_url.rstrip('/')
+        self.api_key = api_key
+        self.alert_template = self._load_template(alert_template_path)
+        self.logger = logging.getLogger(__name__)
+        
+    def _load_template(self, path: str) -> dict:
+        """Load Argus alert template"""
+        try:
+            with open(path, 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return {
+                "title": "Argus Trade Alert",
+                "description": "Live trade monitoring alert",
+                "severity": 2,
+                "tags": ["argus", "trading", "usdjpy", "us100"],
+                "type": "trading_alert",
+                "source": "strategy_rl"
+            }
+    
+    def send_trade_alert(self, trade_data: dict, instruments: list = ["USDJPY", "US100"]) -> Optional[str]:
+        """Send trade alert to TheHive via Argus"""
+        try:
+            alert = self.alert_template.copy()
+            alert.update({
+                "title": f"Argus Alert: {trade_data.get('action', 'UNKNOWN')} {', '.join(instruments)}",
+                "description": json.dumps({
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "instruments": instruments,
+                    "trade": trade_data,
+                    "status": "live_monitoring"
+                }),
+                "date": int(datetime.utcnow().timestamp() * 1000)
+            })
+            
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            import requests
+            response = requests.post(
+                f"{self.thehive_url}/api/v1/alert",
+                json=alert,
+                headers=headers,
+                timeout=10
+            )
+            response.raise_for_status()
+            alert_id = response.json().get("id")
+            self.logger.info(f"Argus alert sent to TheHive: {alert_id}")
+            return alert_id
+            
+        except Exception as e:
+            self.logger.error(f"Failed to send Argus alert: {e}")
+            return None
+
+# Initialization example (add to your existing strategy_rl.py initialization)
+def init_argus_monitor(config: dict) -> ArgusMonitor:
+    """Initialize Argus monitor with TheHive config"""
+    return ArgusMonitor(
+        thehive_url=config.get("thehive_url", "http://localhost:9000"),
+        api_key=config.get("argus_api_key", ""),
+        alert_template_path=config.get("argus_template", "argus_template.json")
+    )

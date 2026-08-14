@@ -28,6 +28,11 @@ def init_db():
         profit REAL, swap REAL, commission REAL, sl REAL, tp REAL,
         open_time TEXT, close_time TEXT, comment TEXT, source TEXT
     )""")
+    conn.execute("""CREATE TABLE IF NOT EXISTS positions_live (
+        ticket INTEGER PRIMARY KEY,
+        symbol TEXT, type TEXT, volume REAL, open_price REAL,
+        profit REAL, open_time TEXT, comment TEXT, updated_at TEXT
+    )""")
     conn.execute("""CREATE TABLE IF NOT EXISTS champions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         symbol TEXT, deployed_at TEXT, profit_factor REAL, drawdown REAL,
@@ -63,17 +68,46 @@ def store_trades(conn, trades):
     count = 0
     for t in trades:
         try:
-            conn.execute("""INSERT OR IGNORE INTO trades 
+            cur = conn.execute("""INSERT OR IGNORE INTO trades 
                 (ticket, symbol, type, volume, profit, swap, commission, close_time, comment, source)
                 VALUES (?,?,?,?,?,?,?,?,?,?)""",
                 (int(t.get("ticket", 0)), t.get("symbol", ""), t.get("type", ""), float(t.get("volume", 0)),
                  float(t.get("profit", 0)), float(t.get("swap", 0)), float(t.get("commission", 0)),
                  t.get("time", ""), t.get("comment"), "mt5"))
-            count += 1
+            if cur.rowcount > 0:
+                count += 1
         except Exception as e:
             log(f"  ⚠ Insert error: {e}")
     conn.commit()
     return count
+
+
+def store_positions(conn, positions):
+    """Stocke les positions ouvertes (P&L flottant)"""
+    if not positions:
+        return 0
+    conn.execute("DELETE FROM positions_live")
+    count = 0
+    for p in positions:
+        try:
+            conn.execute("""INSERT OR REPLACE INTO positions_live
+                (ticket, symbol, type, volume, open_price, profit, open_time, comment, updated_at)
+                VALUES (?,?,?,?,?,?,?,?,?)""",
+                (int(p.get("ticket", 0)), p.get("symbol", ""), p.get("type", ""),
+                 float(p.get("volume", 0)), float(p.get("open_price", 0)),
+                 float(p.get("profit", 0)), str(p.get("open_time", "")),
+                 p.get("comment", ""), datetime.now().isoformat()))
+            count += 1
+        except Exception as e:
+            log(f"  ⚠ Position insert error: {e}")
+    conn.commit()
+    return count
+
+def get_float_pnl(conn):
+    """Calcule le P&L flottant total des positions ouvertes"""
+    cur = conn.execute("SELECT COALESCE(SUM(profit),0), COUNT(*) FROM positions_live")
+    row = cur.fetchone()
+    return (round(row[0], 2), row[1]) if row else (0.0, 0)
 
 def evaluate_current_champion():
     """Calcule les métriques du champion actuel depuis les trades réels"""
@@ -143,6 +177,18 @@ def main():
             if count > 0:
                 log(f"  ✅ {count} nouveaux trades stockés")
         
+        
+        # 1b. Suivi positions ouvertes (P&L flottant)
+        positions = fetch_positions()
+        if positions and isinstance(positions, dict):
+            pos_list = positions.get('positions', [])
+            store_positions(conn, pos_list)
+            fpnl, npos = get_float_pnl(conn)
+            if npos > 0:
+                log(f"  # Positions live: {npos} | P&L flottant: {fpnl:+.2f}$")
+            else:
+                log(f"  # Aucune position ouverte")
+
         # 2. Evaluate current performance
         metrics = evaluate_current_champion()
         if metrics:
@@ -178,7 +224,7 @@ def main():
         
         # 4. Sleep 1 hour between cycles
         log(f"  💤 Prochain cycle dans 1h...")
-        time.sleep(3600)
+        time.sleep(300)
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,2 @@
+{"run_id": "dqn_SOLUSDT_long", "pas": 120000, "eps": 0.02, "perte": 1e-05, "fitness": 4.6624, "net_profit": 4.8597, "max_drawdown": 0.3049, "sortino": 0.0538, "win_rate": 73.5752, "profit_factor": 1.2396, "nb_trades": 39.3333, "fichier": "champion_p120000.npz"}
+{"run_id": "dqn_SOLUSDT_long", "pas": 500000, "fitness": 4.6624, "net_profit": 4.8597, "max_drawdown": 0.3049, "sortino": 0.0538, "win_rate": 73.5752, "profit_factor": 1.2396, "nb_trades": 39.3333, "fichier": "champion_final.npz"}
