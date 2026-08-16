@@ -2699,3 +2699,212 @@ def reward_profit_risk(returns_buffer, window=10, risk_free=0.0, scale_factor=1.
 # Dans la méthode step() de l'environnement, remplacez l'ancienne récompense par:
 #   self.returns_history.append(reward)  # où reward = profit de l'étape
 #   rl_reward = reward_profit_risk(self.returns_history, window=10)
+
+# AUTO-IMPL: argus
+import time
+import statistics
+from collections import deque
+from functools import wraps
+
+class RuntimeMonitor:
+    """Adds runtime monitoring for latency, errors, and anomalies."""
+    
+    def __init__(self, window_size=100, anomaly_std_factor=3.0):
+        self.window_size = window_size
+        self.anomaly_std_factor = anomaly_std_factor
+        self.latencies = deque(maxlen=window_size)
+        self.error_count = 0
+        self.total_calls = 0
+        
+    def record_latency(self, latency):
+        self.latencies.append(latency)
+        self._detect_anomaly(latency)
+        
+    def _detect_anomaly(self, value):
+        if len(self.latencies) < 2:
+            return
+        mean = statistics.mean(self.latencies)
+        std = statistics.stdev(self.latencies) if len(self.latencies) > 1 else 0.0
+        if std > 0 and abs(value - mean) > self.anomaly_std_factor * std:
+            print(f"Anomaly detected: latency {value:.3f}s (mean={mean:.3f}s, std={std:.3f}s)")
+            
+    def record_error(self):
+        self.error_count += 1
+        
+    def get_stats(self):
+        return {
+            'avg_latency': statistics.mean(self.latencies) if self.latencies else 0.0,
+            'max_latency': max(self.latencies) if self.latencies else 0.0,
+            'min_latency': min(self.latencies) if self.latencies else 0.0,
+            'error_rate': self.error_count / max(self.total_calls, 1),
+            'total_calls': self.total_calls
+        }
+
+def monitor_operation(monitor: RuntimeMonitor):
+    """Decorator to wrap functions with latency & error monitoring."""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            start = time.perf_counter()
+            try:
+                result = func(*args, **kwargs)
+                return result
+            except Exception as e:
+                monitor.record_error()
+                raise e
+            finally:
+                elapsed = time.perf_counter() - start
+                monitor.total_calls += 1
+                monitor.record_latency(elapsed)
+        return wrapper
+    return decorator
+
+# Example usage (uncomment if needed):
+# monitor = RuntimeMonitor(window_size=50)
+# @monitor_operation(monitor)
+# def my_action(state):
+#     # ... trading logic
+#     pass
+
+# AUTO-IMPL: rl-reward-structure
+# Ajouter à la fin de strategy_rl.py, avant l'usage de la récompense
+
+def optimize_reward_function(reward_dict, config):
+    """
+    Optimise la fonction de récompense pour aligner sur les objectifs de trading.
+    Ajoute des composantes ajustables : profit, risque, drawdown, slippage.
+    """
+    profit = reward_dict.get('profit', 0.0)
+    risk = reward_dict.get('risk', 0.0)
+    max_drawdown = reward_dict.get('max_drawdown', 0.0)
+    slippage_cost = reward_dict.get('slippage_cost', 0.0)
+
+    # Poids configurables
+    w_profit = config.get('w_profit', 1.0)
+    w_risk = config.get('w_risk', -0.5)
+    w_drawdown = config.get('w_drawdown', -0.3)
+    w_slippage = config.get('w_slippage', -0.2)
+
+    # Pénalité exponentielle pour drawdown sévère
+    drawdown_penalty = -w_drawdown * (max_drawdown ** 2) if max_drawdown > 0.05 else 0.0
+
+    # Récompense ajustée
+    reward = (w_profit * profit
+              + w_risk * risk
+              + drawdown_penalty
+              + w_slippage * slippage_cost)
+
+    # Normalisation douce (optionnelle)
+    reward = max(min(reward, 10.0), -10.0)
+
+    return reward
+
+# Exemple d'intégration dans la boucle d'apprentissage (à adapter selon votre code)
+# Dans la fonction compute_reward() existante, remplacer le return par:
+# if hasattr(self, 'config_rl'):
+#     return optimize_reward_function(locals(), self.config_rl)
+# else:
+#     return original_reward
+
+# AUTO-IMPL: rl-reward-structure
+import numpy as np
+from typing import Optional
+
+def risk_adjusted_reward(returns: np.ndarray,
+                         costs: np.ndarray,
+                         risk_free_rate: float = 0.0,
+                         gamma: float = 1.0,
+                         lambda_cost: float = 1.0) -> float:
+    """
+    Compute a reward that balances risk-adjusted returns and transaction costs.
+
+    Reward = (mean(returns) - risk_free_rate) / (std(returns) + 1e-8) * gamma
+             - lambda_cost * np.sum(np.abs(costs))
+
+    Args:
+        returns: Array of recent portfolio returns.
+        costs: Array of transaction costs (e.g., spread + slippage) per step.
+        risk_free_rate: Annual risk-free rate, converted to step rate.
+        gamma: Scaling factor for risk-adjusted term.
+        lambda_cost: Penalty weight for total transaction costs.
+
+    Returns:
+        Scalar reward.
+    """
+    if len(returns) == 0:
+        return 0.0
+    mean_ret = np.mean(returns) - risk_free_rate
+    std_ret  = np.std(returns) + 1e-8  # avoid division by zero
+    sharpe   = mean_ret / std_ret
+    cost_penalty = lambda_cost * np.sum(np.abs(costs))
+    return gamma * sharpe - cost_penalty
+
+
+class RiskAwareRewardMixin:
+    """Mixin to replace base reward calculation with risk-adjusted metric."""
+
+    def calculate_reward(self, returns: np.ndarray,
+                         costs: np.ndarray,
+                         **kwargs) -> float:
+        """Override this method in your RL agent to use the new reward."""
+        return risk_adjusted_reward(returns, costs, **kwargs)
+
+# AUTO-IMPL: ai-governance-finance
+# À ajouter dans strategy_rl.py, par exemple dans la classe RLStrategy ou en tant que fonctions séparées.
+
+class RegulatoryValidator:
+    """
+    Couche de validation et de contraintes réglementaires.
+    Peut être intégrée avant l'exécution des actions du RL.
+    """
+    def __init__(self, config: dict = None):
+        self.config = config or {}
+        self.max_position = self.config.get('max_position', 1000)
+        self.max_order_size = self.config.get('max_order_size', 200)
+        self.trading_hours = self.config.get('trading_hours', (9, 17))
+        self.short_selling_allowed = self.config.get('short_selling_allowed', True)
+        self.leverage_limit = self.config.get('leverage_limit', 2.0)
+
+    def validate_action(self, action: dict, state: dict) -> bool:
+        """
+        Valide une action avant exécution.
+        Retourne True si l'action est autorisée, False sinon.
+        """
+        # Vérification des heures de trading
+        current_hour = state.get('current_hour', 0)
+        if not (self.trading_hours[0] <= current_hour < self.trading_hours[1]):
+            print(f"Action refusée : hors heures de trading ({self.trading_hours})")
+            return False
+
+        # Vérification de la taille de l'ordre
+        order_size = action.get('size', 0)
+        if order_size > self.max_order_size:
+            print(f"Action refusée : taille d'ordre {order_size} > max {self.max_order_size}")
+            return False
+
+        # Vérification de la limite de position
+        current_position = state.get('position', 0)
+        new_position = current_position + action.get('direction', 0) * order_size
+        if abs(new_position) > self.max_position:
+            print(f"Action refusée : position maximale dépassée ({abs(new_position)} > {self.max_position})")
+            return False
+
+        # Vérification de l'autorisation de vente à découvert
+        if action.get('direction', 0) < 0 and not self.short_selling_allowed:
+            print("Action refusée : vente à découvert interdite")
+            return False
+
+        # Vérification du levier
+        capital = state.get('capital', 1.0)
+        if capital > 0 and abs(new_position) / capital > self.leverage_limit:
+            print(f"Action refusée : levier {abs(new_position)/capital:.2f} > max {self.leverage_limit}")
+            return False
+
+        return True
+
+# Exemple d'utilisation (à intégrer dans la boucle d'apprentissage)
+# validator = RegulatoryValidator(config)
+# if validator.validate_action(action, state):
+#     exécuter_action(action)
+# else:
+#     action = action_par_défaut_ou_zero

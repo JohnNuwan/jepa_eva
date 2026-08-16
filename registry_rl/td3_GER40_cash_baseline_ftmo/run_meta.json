@@ -1,0 +1,37 @@
+{
+  "run_id": "td3_GER40_cash_baseline_ftmo",
+  "symbole": "GER40.cash",
+  "algo": "td3",
+  "duree_s": 13631.5,
+  "nb_champions": 6,
+  "nb_records": 20000,
+  "meilleur_holdout": 2.495,
+  "config": {
+    "algo": "td3",
+    "symbole": "GER40.cash",
+    "timeframe": "m15",
+    "generations": 100,
+    "segment": 512,
+    "taille_pop": 64,
+    "nb_elites": 16,
+    "taux_mutation": 0.1,
+    "sigma_mutation": 0.02,
+    "dim_cache": 256,
+    "dim_action": 8,
+    "cout_transaction": 0.0002,
+    "fitness": {
+      "sortino": 2.0,
+      "sharpe": 0.0,
+      "dd": 1.0,
+      "np": 1.0,
+      "pf": 0.0,
+      "wr": 0.0
+    },
+    "frac_train": 0.8,
+    "eval_holdout": 10,
+    "walkforward": 1,
+    "levier": 30.0,
+    "seed": 0,
+    "id": "td3_GER40_cash_baseline_ftmo"
+  }
+}
