@@ -1,0 +1,2 @@
+{"run_id": "ppo_GER40_cash_baseline", "generation": 19, "fitness_train": -0.0051, "fitness": -0.9487, "net_profit": 1.6164, "max_drawdown": 2.2016, "sortino": -0.1817, "win_rate": 42.5926, "profit_factor": 1.5558, "nb_trades": 18.0, "fichier": "champion_up19.npz"}
+{"run_id": "ppo_GER40_cash_baseline", "generation": 48, "fitness": -0.9487, "net_profit": 1.6164, "max_drawdown": 2.2016, "sortino": -0.1817, "win_rate": 42.5926, "profit_factor": 1.5558, "nb_trades": 18.0, "fichier": "champion_final.npz"}

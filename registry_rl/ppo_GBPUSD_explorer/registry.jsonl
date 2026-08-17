@@ -1,0 +1,3 @@
+{"run_id": "ppo_GBPUSD_explorer", "generation": 39, "fitness_train": -0.0089, "fitness": 0.0322, "net_profit": 0.7698, "max_drawdown": 0.7936, "sortino": 0.028, "win_rate": 36.7647, "profit_factor": 1.6131, "nb_trades": 16.3333, "fichier": "champion_up39.npz"}
+{"run_id": "ppo_GBPUSD_explorer", "generation": 49, "fitness_train": -0.0088, "fitness": 0.5764, "net_profit": 0.9602, "max_drawdown": 0.3838, "sortino": 0.0, "win_rate": 44.4444, "profit_factor": 9.8076, "nb_trades": 4.0, "fichier": "champion_up49.npz"}
+{"run_id": "ppo_GBPUSD_explorer", "generation": 65, "fitness": 0.5764, "net_profit": 0.9602, "max_drawdown": 0.3838, "sortino": 0.0, "win_rate": 44.4444, "profit_factor": 9.8076, "nb_trades": 4.0, "fichier": "champion_final.npz"}

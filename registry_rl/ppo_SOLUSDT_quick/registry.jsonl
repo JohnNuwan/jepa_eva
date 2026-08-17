@@ -1,0 +1,3 @@
+{"run_id": "ppo_SOLUSDT_quick", "generation": 4, "fitness_train": -0.0092, "fitness": 2.5146, "net_profit": 2.5194, "max_drawdown": 0.2499, "sortino": 0.1226, "win_rate": 38.0952, "profit_factor": 8.1952, "nb_trades": 4.6667, "fichier": "champion_up4.npz"}
+{"run_id": "ppo_SOLUSDT_quick", "generation": 39, "fitness_train": -0.0081, "fitness": 3.3039, "net_profit": 3.5013, "max_drawdown": 0.3049, "sortino": 0.0538, "win_rate": 49.3056, "profit_factor": 2.1704, "nb_trades": 14.0, "fichier": "champion_up39.npz"}
+{"run_id": "ppo_SOLUSDT_quick", "generation": 48, "fitness": 3.3039, "net_profit": 3.5013, "max_drawdown": 0.3049, "sortino": 0.0538, "win_rate": 49.3056, "profit_factor": 2.1704, "nb_trades": 14.0, "fichier": "champion_final.npz"}

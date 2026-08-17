@@ -1,0 +1,4 @@
+{"run_id": "ppo_US100_cash_baseline", "generation": 9, "fitness_train": -0.0049, "fitness": -2.2523, "net_profit": -0.7713, "max_drawdown": 1.481, "sortino": 0.0, "win_rate": 47.9142, "profit_factor": 0.8738, "nb_trades": 66.0}
+{"run_id": "ppo_US100_cash_baseline", "generation": 19, "fitness_train": -0.0031, "fitness": 0.6339, "net_profit": 0.7989, "max_drawdown": 0.165, "sortino": 0.0, "win_rate": 25.3968, "profit_factor": 1.0461, "nb_trades": 10.6667}
+{"run_id": "ppo_US100_cash_baseline", "generation": 29, "fitness_train": -0.0027, "fitness": 0.6738, "net_profit": 1.4106, "max_drawdown": 0.7368, "sortino": 0.0, "win_rate": 52.6882, "profit_factor": 1.9429, "nb_trades": 15.0}
+{"run_id": "ppo_US100_cash_baseline", "generation": 39, "fitness_train": -0.0038, "fitness": -0.4339, "net_profit": 0.3107, "max_drawdown": 0.7446, "sortino": 0.0, "win_rate": 28.5714, "profit_factor": 0.983, "nb_trades": 10.3333}

@@ -1,0 +1,1 @@
+{"run_id": "dqn_BTCUSDT_rapide", "pas": 50000, "fitness": -13.4747, "net_profit": -6.0968, "max_drawdown": 6.1937, "sortino": -0.5921, "win_rate": 26.7265, "profit_factor": 0.393, "nb_trades": 129.3333, "fichier": "champion_final.npz"}

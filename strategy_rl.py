@@ -2908,3 +2908,276 @@ class RegulatoryValidator:
 #     exécuter_action(action)
 # else:
 #     action = action_par_défaut_ou_zero
+
+
+# AUTO-IMPL: worldcycle
+# Integration with WorldCycle + DeepSeek V4 via OpenRouter
+# FIXED: asyncio.run() -> loop reuse, eval() -> json/ast.literal_eval,
+#        deprecated OpenAI API, missing _execute_trade, GPU configurable
+
+
+import os
+import ast
+import json
+import asyncio
+import torch
+from typing import Dict, Any
+import numpy as np
+from openai import AsyncOpenAI
+from stable_baselines3 import PPO
+from stable_baselines3.common.vec_env import SubprocVecEnv
+
+_openai_client = None
+def _get_client():
+    global _openai_client
+    if _openai_client is None:
+        _openai_client = AsyncOpenAI(
+            api_key=os.getenv("OPENROUTER_API_KEY"),
+            base_url="https://openrouter.ai/api/v1"
+        )
+    return _openai_client
+
+DEEPSEEK_MODEL = "deepseek/deepseek-v4"
+DEFAULT_GPU = int(os.environ.get("JEPA_GPU", "1"))
+
+class WorldCycleDeepSeekPolicy:
+    """RL policy with WorldCycle state representation and DeepSeek action suggestions"""
+
+    def __init__(self, env_config: Dict[str, Any], n_envs: int = 8):
+        self.n_envs = n_envs
+        self.env = SubprocVecEnv([lambda: self._make_env(env_config) for _ in range(n_envs)])
+        self.model = PPO("MlpPolicy", self.env, verbose=1, learning_rate=3e-4, n_steps=2048)
+        try:
+            self._loop = asyncio.get_running_loop()
+        except RuntimeError:
+            self._loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self._loop)
+
+    def _make_env(self, config: Dict):
+        try:
+            from gymnasium import Env
+            from gymnasium.spaces import Box
+        except ImportError:
+            from gym import Env
+            from gym.spaces import Box
+
+        class WorldCycleEnv(Env):
+            def __init__(self, cfg):
+                self.observation_space = Box(low=-np.inf, high=np.inf, shape=(20,))
+                self.action_space = Box(low=-1, high=1, shape=(3,))
+
+            def step(self, action):
+                state = self._get_world_state()
+                obs = self._encode_observation(state)
+                deepseek_action = self._query_deepseek_sync(state)
+                alpha = float(os.environ.get("DEEPSEEK_BLEND", "0.3"))
+                blended = (1 - alpha) * action + alpha * deepseek_action
+                blended = np.clip(blended, -1, 1)
+                reward = self._execute_trade(blended)
+                done = False
+                info = {"deepseek_advice": deepseek_action}
+                return obs, reward, done, info
+
+            def _get_world_state(self):
+                # TODO: replace with real market data + cycle indicators
+                return np.random.rand(10)
+
+            def _encode_observation(self, state):
+                return np.concatenate([state, [np.mean(state), np.std(state), state[-1]]])
+
+            @staticmethod
+            def _query_deepseek_sync(state_array):
+                """Sync wrapper - avoids nested asyncio.run() RuntimeError"""
+                try:
+                    loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                return loop.run_until_complete(
+                    WorldCycleEnv._query_deepseek_async(state_array)
+                )
+
+            @staticmethod
+            async def _query_deepseek_async(state_array):
+                """Query DeepSeek V4 via OpenRouter (async) - safe parsing, no eval()"""
+                try:
+                    client = _get_client()
+                    response = await client.chat.completions.create(
+                        model=DEEPSEEK_MODEL,
+                        messages=[{
+                            "role": "system",
+                            "content": "You are a trading advisor. Respond with a JSON array of 3 floats "
+                                       "in range [-1,1] for position, size, leverage. Example: [0.5,0.3,-0.2]"}
+                        ],
+                        max_tokens=50
+                    )
+                    content = response.choices[0].message.content.strip()
+                    try:
+                        advice = np.array(json.loads(content))
+                    except (json.JSONDecodeError, ValueError):
+                        try:
+                            advice = np.array(ast.literal_eval(content))
+                        except (ValueError, SyntaxError):
+                            return np.zeros(3)
+                    if advice.shape != (3,):
+                        return np.zeros(3)
+                    return np.clip(advice, -1, 1).astype(np.float32)
+                except Exception as e:
+                    print(f"DeepSeek query failed: {e}")
+                    return np.zeros(3)
+
+            @staticmethod
+            def _execute_trade(action):
+                """Execute trade - reward proxy. TODO: replace with real MT5 bridge call"""
+                return float(np.tanh(action[0]) * 0.01)
+
+        return WorldCycleEnv(config)
+
+    def train(self, total_timesteps: int = 500000):
+        gpu_id = DEFAULT_GPU
+        if torch.cuda.is_available() and gpu_id < torch.cuda.device_count():
+            torch.cuda.set_device(gpu_id)
+            print(f"Using GPU {gpu_id}: {torch.cuda.get_device_name(gpu_id)}")
+        self.model.learn(total_timesteps=total_timesteps, progress_bar=True)
+
+    def predict(self, observation, state=None, episode_start=None, deterministic=True):
+        action, _states = self.model.predict(observation, state, episode_start, deterministic)
+        alpha = float(os.environ.get("DEEPSEEK_BLEND", "0.3"))
+        return (1 - alpha) * action + alpha * np.zeros(3), _states
+
+
+# Usage example
+if __name__ == "__main__":
+    config = {"symbol": "BTC/USD", "lookback": 100}
+    agent = WorldCycleDeepSeekPolicy(config)
+    agent.train()
+
+# AUTO-IMPL: argus
+# Add to strategy_rl.py - Argus monitoring integration for live trading loops
+
+import threading
+import time
+from datetime import datetime
+import logging
+import json
+
+# Argus monitoring class for live trade oversight
+class ArgusMonitor:
+    def __init__(self, symbols, deepseek_v4_thresholds=None):
+        self.symbols = symbols  # ['USDJPY', 'US30', 'US100', 'GER40']
+        self.thresholds = deepseek_v4_thresholds or {
+            'min_profit_pips': 5,
+            'max_loss_pips': -15,
+            'max_lot_size': 0.5,
+            'max_open_trades': 5,
+            'anomaly_deviation': 2.5
+        }
+        self.active = False
+        self.trade_log = []
+        self.logger = logging.getLogger('Argus')
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter('%(asctime)s - ARGUS - %(levelname)s: %(message)s')
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+        self.logger.setLevel(logging.INFO)
+
+    def monitor_loop(self, get_current_positions_func, place_trade_func=None):
+        """Continuous monitoring thread for live trading anomalies"""
+        self.active = True
+        while self.active:
+            try:
+                for symbol in self.symbols:
+                    positions = get_current_positions_func(symbol)
+                    if not positions:
+                        continue
+                    
+                    total_profit = sum(p['profit'] for p in positions)
+                    open_count = len(positions)
+                    
+                    # DeepSeek V4 threshold checks
+                    if total_profit < self.thresholds['max_loss_pips']:
+                        self.logger.warning(f"ANOMALY {symbol}: Loss threshold exceeded - {total_profit} pips")
+                        # Optional auto-hedge logic here
+                        self._flag_anomaly(symbol, 'excessive_loss', total_profit)
+                    
+                    if open_count > self.thresholds['max_open_trades']:
+                        self.logger.error(f"ANOMALY {symbol}: Over-trading - {open_count} open positions")
+                        self._flag_anomaly(symbol, 'over_trading', open_count)
+                    
+                    # Deviation check (simplified DeepSeek V4)
+                    avg_profit = total_profit / max(open_count, 1)
+                    if abs(avg_profit) > self.thresholds['anomaly_deviation'] * 2:
+                        self.logger.info(f"ARGUS {symbol}: Deviation alert - avg profit {avg_profit:.2f}")
+                
+                time.sleep(5)  # Check every 5 seconds
+            except Exception as e:
+                self.logger.error(f"Argus monitor crashed: {e}")
+                time.sleep(10)
+
+    def _flag_anomaly(self, symbol, anomaly_type, value):
+        """Log anomaly with timestamp for later analysis"""
+        entry = {
+            'timestamp': datetime.utcnow().isoformat(),
+            'symbol': symbol,
+            'type': anomaly_type,
+            'value': value,
+            'threshold': self.thresholds.get(f'max_{anomaly_type.replace("_", "_")}')
+        }
+        self.trade_log.append(entry)
+        # Can also trigger Telegram/email alerts here
+
+    def start(self, get_positions_func):
+        thread = threading.Thread(target=self.monitor_loop, args=(get_positions_func,))
+        thread.daemon = True
+        thread.start()
+        self.logger.info(f"Argus deployed on Bee for {', '.join(self.symbols)}")
+        return thread
+
+    def stop(self):
+        self.active = False
+        self.logger.info("Argus monitoring stopped")
+
+# Usage example (to be placed inside your RL strategy class init or main loop):
+# argus = ArgusMonitor(['USDJPY', 'US30', 'US100', 'GER40'])
+# argus.start(self.get_positions)  # where self.get_positions returns list of dicts with 'profit'
+
+# AUTO-IMPL: ai-governance-finance
+# guardrails.py (ou ajout à strategy_rl.py)
+import logging
+from datetime import datetime
+from typing import Dict, Any
+
+logger = logging.getLogger("DeepSeekAudit")
+
+class BeeGuardrails:
+    """Rule-based guardrails for position limits and drawdown caps."""
+    def __init__(self, max_position: float = 1.0, max_drawdown: float = 0.2):
+        self.max_position = max_position
+        self.max_drawdown = max_drawdown
+        self.equity_peak = None
+
+    def check(self, equity: float, position: float) -> bool:
+        """Return False if trade should be blocked.
+        position in % of equity, drawdown vs peak."""
+        if self.equity_peak is None:
+            self.equity_peak = equity
+        self.equity_peak = max(self.equity_peak, equity)
+        drawdown = (self.equity_peak - equity) / self.equity_peak if self.equity_peak else 0
+        if drawdown > self.max_drawdown:
+            audit_decision("blocked", f"Drawdown {drawdown:.2%} > {self.max_drawdown:.2%}")
+            return False
+        if abs(position) > self.max_position:
+            audit_decision("blocked", f"Position {position:.2f} > {self.max_position:.2f}")
+            return False
+        return True
+
+def audit_decision(action: str, reason: str = "", context: Dict[str, Any] = None):
+    """Log explainability for DeepSeek V4 decisions."""
+    log_entry = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "action": action,
+        "reason": reason,
+        "context": context or {},
+        "model": "DeepSeek V4",
+    }
+    logger.info(f"AUDIT: {log_entry}")

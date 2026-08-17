@@ -1,0 +1,2 @@
+{"run_id": "dqn_US500_cash_rapide", "pas": 7500, "eps": 0.02, "perte": 0.0, "fitness": 0.3106, "net_profit": 0.555, "max_drawdown": 0.2444, "sortino": 0.0, "win_rate": 25.1437, "profit_factor": 0.9294, "nb_trades": 18.3333, "fichier": "champion_p7500.npz"}
+{"run_id": "dqn_US500_cash_rapide", "pas": 50000, "fitness": 0.3106, "net_profit": 0.555, "max_drawdown": 0.2444, "sortino": 0.0, "win_rate": 25.1437, "profit_factor": 0.9294, "nb_trades": 18.3333, "fichier": "champion_final.npz"}

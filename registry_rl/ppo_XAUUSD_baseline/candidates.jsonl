@@ -1,0 +1,4 @@
+{"run_id": "ppo_XAUUSD_baseline", "generation": 9, "fitness_train": -0.0045, "fitness": -16.5317, "net_profit": -7.6767, "max_drawdown": 8.1785, "sortino": -0.3383, "win_rate": 39.9506, "profit_factor": 0.5534, "nb_trades": 118.0}
+{"run_id": "ppo_XAUUSD_baseline", "generation": 19, "fitness_train": -0.0016, "fitness": -24.7731, "net_profit": -12.4401, "max_drawdown": 12.7914, "sortino": 0.2291, "win_rate": 40.6541, "profit_factor": 0.6771, "nb_trades": 293.0}
+{"run_id": "ppo_XAUUSD_baseline", "generation": 29, "fitness_train": -0.0035, "fitness": -1.414, "net_profit": 0.4782, "max_drawdown": 2.9552, "sortino": 0.5315, "win_rate": 48.3536, "profit_factor": 1.2103, "nb_trades": 85.3333}
+{"run_id": "ppo_XAUUSD_baseline", "generation": 39, "fitness_train": -0.0044, "fitness": -6.3146, "net_profit": -2.3059, "max_drawdown": 4.7947, "sortino": 0.393, "win_rate": 42.5065, "profit_factor": 0.8556, "nb_trades": 58.3333}

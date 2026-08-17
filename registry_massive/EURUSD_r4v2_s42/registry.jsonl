@@ -1,0 +1,2 @@
+{"run_id": "EURUSD_r4v2_s42", "fold": 0, "generation": 59, "fitness_train": 0.374, "fitness": 1.287, "net_profit": 3.622, "drawdown": 2.2541, "sortino": -0.0404, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_f0_g59.npz"}
+{"run_id": "EURUSD_r4v2_s42", "fold": "final", "generation": 750, "fitness_train": 0.0, "fitness": 0.0, "net_profit": 0.0, "drawdown": 0.0, "sortino": 0.0, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_final.npz"}

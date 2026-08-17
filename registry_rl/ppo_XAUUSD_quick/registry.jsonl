@@ -1,0 +1,1 @@
+{"run_id": "ppo_XAUUSD_quick", "generation": 48, "fitness": -7.8006, "net_profit": -2.901, "max_drawdown": 4.8996, "sortino": 0.0, "win_rate": 45.5705, "profit_factor": 0.8723, "nb_trades": 140.0, "fichier": "champion_final.npz"}

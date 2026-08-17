@@ -1,0 +1,2 @@
+{"run_id": "ppo_XAUUSD_baseline", "generation": 29, "fitness_train": -0.0035, "fitness": -1.414, "net_profit": 0.4782, "max_drawdown": 2.9552, "sortino": 0.5315, "win_rate": 48.3536, "profit_factor": 1.2103, "nb_trades": 85.3333, "fichier": "champion_up29.npz"}
+{"run_id": "ppo_XAUUSD_baseline", "generation": 48, "fitness": -1.414, "net_profit": 0.4782, "max_drawdown": 2.9552, "sortino": 0.5315, "win_rate": 48.3536, "profit_factor": 1.2103, "nb_trades": 85.3333, "fichier": "champion_final.npz"}

@@ -1,0 +1,4 @@
+{"run_id": "ppo_EURUSD_baseline", "generation": 9, "fitness_train": -0.0015, "fitness": -3.3391, "net_profit": -1.2922, "max_drawdown": 1.4469, "sortino": -0.3, "win_rate": 39.5238, "profit_factor": 0.43, "nb_trades": 22.6667}
+{"run_id": "ppo_EURUSD_baseline", "generation": 19, "fitness_train": -0.0077, "fitness": -8.0861, "net_profit": -3.8108, "max_drawdown": 3.899, "sortino": -0.1882, "win_rate": 24.1522, "profit_factor": 0.2231, "nb_trades": 81.6667}
+{"run_id": "ppo_EURUSD_baseline", "generation": 29, "fitness_train": -0.0052, "fitness": -4.7343, "net_profit": -1.9752, "max_drawdown": 2.2877, "sortino": -0.2357, "win_rate": 32.3712, "profit_factor": 0.412, "nb_trades": 58.3333}
+{"run_id": "ppo_EURUSD_baseline", "generation": 39, "fitness_train": -0.0065, "fitness": -1.8112, "net_profit": -0.2199, "max_drawdown": 0.7562, "sortino": -0.4176, "win_rate": 28.1009, "profit_factor": 0.92, "nb_trades": 38.3333}

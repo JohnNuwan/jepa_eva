@@ -1,0 +1,30 @@
+{
+  "run_id": "sac_EURUSD_baseline",
+  "symbole": "EURUSD",
+  "algo": "sac",
+  "duree_s": 2386.5,
+  "nb_champions": 0,
+  "nb_records": 40,
+  "meilleur_holdout": -Infinity,
+  "config": {
+    "symbole": "EURUSD",
+    "timeframe": "m15",
+    "frac_train": 0.8,
+    "max_holdout": 1500,
+    "np_min_holdout": 0.0,
+    "dd_max_holdout": 5.0,
+    "seed": 0,
+    "id": "sac_EURUSD_baseline",
+    "steps": 200000,
+    "segment": 512,
+    "eval_holdout": 5000,
+    "lr": 0.0003,
+    "gamma": 0.99,
+    "tau": 0.005,
+    "alpha": 0.2,
+    "alpha_auto": true,
+    "buffer_taille": 100000,
+    "batch": 64,
+    "largeur": 256
+  }
+}

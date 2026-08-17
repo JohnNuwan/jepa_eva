@@ -1,0 +1,1 @@
+{"run_id": "ppo_EURUSD_baseline", "generation": 48, "fitness": -2.2374, "net_profit": -0.972, "max_drawdown": 1.1188, "sortino": -0.0733, "win_rate": 27.381, "profit_factor": 0.4116, "nb_trades": 21.3333, "fichier": "champion_final.npz"}

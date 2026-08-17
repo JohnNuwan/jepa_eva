@@ -1,0 +1,1 @@
+{"run_id": "GER40_cash_r4v2_s42", "fold": "final", "generation": 750, "fitness_train": -41.26215362548828, "fitness": -75.5886, "net_profit": -20.7573, "drawdown": 54.8989, "sortino": 0.0338, "win_rate": 28.5714, "profit_factor": 2.8394, "nb_trades": 14.0, "fichier": "champion_final.npz"}

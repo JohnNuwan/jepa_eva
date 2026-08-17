@@ -1,0 +1,1 @@
+{"run_id": "ppo_ETHUSDT_baseline", "generation": 48, "fitness": 5.3966, "net_profit": 6.4153, "max_drawdown": 0.8923, "sortino": -0.0632, "win_rate": 58.5556, "profit_factor": 2.2259, "nb_trades": 32.0, "fichier": "champion_final.npz"}

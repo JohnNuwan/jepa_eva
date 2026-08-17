@@ -1,0 +1,25 @@
+{
+  "run_id": "dqn_ETHUSDT_rapide",
+  "symbole": "ETHUSDT",
+  "algo": "dqn",
+  "duree_s": 186.1,
+  "nb_champions": 3,
+  "nb_records": 20,
+  "meilleur_holdout": 5.0119,
+  "config": {
+    "symbole": "ETHUSDT",
+    "timeframe": "m15",
+    "frac_train": 0.8,
+    "max_holdout": 1500,
+    "np_min_holdout": 0.0,
+    "dd_max_holdout": 5.0,
+    "seed": 0,
+    "id": "dqn_ETHUSDT_rapide",
+    "steps": 50000,
+    "segment": 256,
+    "eval_holdout": 2500,
+    "eps_decay": 1000,
+    "buffer_taille": 20000,
+    "largeur": 128
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "run_id": "sac_US30_cash_rapide",
+  "symbole": "US30.cash",
+  "algo": "sac",
+  "duree_s": 572.4,
+  "nb_champions": 1,
+  "nb_records": 20,
+  "meilleur_holdout": -0.5061,
+  "config": {
+    "symbole": "US30.cash",
+    "timeframe": "m15",
+    "frac_train": 0.8,
+    "max_holdout": 1500,
+    "np_min_holdout": 0.0,
+    "dd_max_holdout": 5.0,
+    "seed": 0,
+    "id": "sac_US30_cash_rapide",
+    "steps": 50000,
+    "segment": 256,
+    "eval_holdout": 2500,
+    "buffer_taille": 20000,
+    "largeur": 128
+  }
+}

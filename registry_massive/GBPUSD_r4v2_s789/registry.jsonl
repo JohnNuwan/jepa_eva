@@ -1,0 +1,2 @@
+{"run_id": "GBPUSD_r4v2_s789", "fold": 0, "generation": 59, "fitness_train": 17.8658, "fitness": 10.9085, "net_profit": 14.9837, "drawdown": 4.0699, "sortino": -0.0026, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_f0_g59.npz"}
+{"run_id": "GBPUSD_r4v2_s789", "fold": "final", "generation": 750, "fitness_train": 0.0, "fitness": 0.0, "net_profit": 0.0, "drawdown": 0.0, "sortino": 0.0, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_final.npz"}

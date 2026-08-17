@@ -1,0 +1,6 @@
+{"run_id": "ppo_ETHUSDT_explorer", "generation": 9, "fitness_train": -0.0045, "fitness": -14.1573, "net_profit": -6.8977, "max_drawdown": 7.3776, "sortino": 0.059, "win_rate": 42.5837, "profit_factor": 0.3855, "nb_trades": 20.0}
+{"run_id": "ppo_ETHUSDT_explorer", "generation": 19, "fitness_train": -0.0042, "fitness": -15.437, "net_profit": -4.9523, "max_drawdown": 10.6027, "sortino": 0.059, "win_rate": 14.2857, "profit_factor": 0.6451, "nb_trades": 7.0}
+{"run_id": "ppo_ETHUSDT_explorer", "generation": 29, "fitness_train": -0.0018, "fitness": -1.1408, "net_profit": 0.6919, "max_drawdown": 1.9508, "sortino": 0.059, "win_rate": 44.246, "profit_factor": 1.3488, "nb_trades": 16.6667}
+{"run_id": "ppo_ETHUSDT_explorer", "generation": 39, "fitness_train": -0.007, "fitness": -23.9178, "net_profit": -11.3108, "max_drawdown": 12.607, "sortino": 0.0, "win_rate": 26.9231, "profit_factor": 0.3915, "nb_trades": 26.0}
+{"run_id": "ppo_ETHUSDT_explorer", "generation": 49, "fitness_train": -0.0062, "fitness": -9.3238, "net_profit": -3.9014, "max_drawdown": 5.4223, "sortino": 0.0, "win_rate": 21.5278, "profit_factor": 0.3965, "nb_trades": 10.6667}
+{"run_id": "ppo_ETHUSDT_explorer", "generation": 59, "fitness_train": -0.005, "fitness": -0.7666, "net_profit": -0.3363, "max_drawdown": 0.4303, "sortino": 0.0, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.6667}

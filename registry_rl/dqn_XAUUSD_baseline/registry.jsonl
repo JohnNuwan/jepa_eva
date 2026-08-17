@@ -1,0 +1,1 @@
+{"run_id": "dqn_XAUUSD_baseline", "pas": 200000, "fitness": -17.3265, "net_profit": -7.6848, "max_drawdown": 9.1772, "sortino": -0.2322, "win_rate": 38.0033, "profit_factor": 0.6528, "nb_trades": 138.0, "fichier": "champion_final.npz"}

@@ -1,0 +1,2 @@
+{"run_id": "ppo_BTCUSD_baseline", "generation": 9, "fitness_train": -0.0054, "fitness": 14.9791, "net_profit": 17.5827, "max_drawdown": 1.9052, "sortino": -0.3492, "win_rate": 46.852, "profit_factor": 2.4105, "nb_trades": 132.3333, "fichier": "champion_up9.npz"}
+{"run_id": "ppo_BTCUSD_baseline", "generation": 48, "fitness": 14.9791, "net_profit": 17.5827, "max_drawdown": 1.9052, "sortino": -0.3492, "win_rate": 46.852, "profit_factor": 2.4105, "nb_trades": 132.3333, "fichier": "champion_final.npz"}

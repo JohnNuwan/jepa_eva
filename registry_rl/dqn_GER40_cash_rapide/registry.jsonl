@@ -1,0 +1,1 @@
+{"run_id": "dqn_GER40_cash_rapide", "pas": 50000, "fitness": -13.2407, "net_profit": -6.3127, "max_drawdown": 6.8887, "sortino": -0.0197, "win_rate": 35.3637, "profit_factor": 0.583, "nb_trades": 196.3333, "fichier": "champion_final.npz"}

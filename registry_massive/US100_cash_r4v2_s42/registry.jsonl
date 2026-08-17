@@ -1,0 +1,2 @@
+{"run_id": "US100_cash_r4v2_s42", "fold": 0, "generation": 9, "fitness_train": -11.7588, "fitness": 101.6409, "net_profit": 101.2495, "drawdown": 0.0, "sortino": 0.1957, "win_rate": 50.0, "profit_factor": 0.9193, "nb_trades": 2.0, "fichier": "champion_f0_g9.npz"}
+{"run_id": "US100_cash_r4v2_s42", "fold": "final", "generation": 750, "fitness_train": 165.09983825683594, "fitness": -10.2287, "net_profit": -2.5815, "drawdown": 8.0354, "sortino": 0.1941, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 3.0, "fichier": "champion_final.npz"}

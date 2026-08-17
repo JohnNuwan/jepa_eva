@@ -1,0 +1,2 @@
+{"run_id": "ppo_SOLUSDT_baseline", "generation": 9, "fitness_train": -0.0044, "fitness": 5.6468, "net_profit": 5.8442, "max_drawdown": 0.3049, "sortino": 0.0538, "win_rate": 67.4242, "profit_factor": 40.9333, "nb_trades": 17.3333, "fichier": "champion_up9.npz"}
+{"run_id": "ppo_SOLUSDT_baseline", "generation": 48, "fitness": 5.6468, "net_profit": 5.8442, "max_drawdown": 0.3049, "sortino": 0.0538, "win_rate": 67.4242, "profit_factor": 40.9333, "nb_trades": 17.3333, "fichier": "champion_final.npz"}

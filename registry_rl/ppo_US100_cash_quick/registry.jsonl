@@ -1,0 +1,1 @@
+{"run_id": "ppo_US100_cash_quick", "generation": 48, "fitness": -5.8937, "net_profit": -2.7977, "max_drawdown": 3.096, "sortino": 0.0, "win_rate": 40.1884, "profit_factor": 0.6563, "nb_trades": 55.3333, "fichier": "champion_final.npz"}

@@ -1,0 +1,4 @@
+{"run_id": "ppo_GER40_cash_baseline", "generation": 9, "fitness_train": -0.0011, "fitness": -1.4647, "net_profit": -0.7324, "max_drawdown": 0.7324, "sortino": 0.0, "win_rate": 13.1944, "profit_factor": 0.2129, "nb_trades": 16.0}
+{"run_id": "ppo_GER40_cash_baseline", "generation": 19, "fitness_train": -0.0051, "fitness": -0.9487, "net_profit": 1.6164, "max_drawdown": 2.2016, "sortino": -0.1817, "win_rate": 42.5926, "profit_factor": 1.5558, "nb_trades": 18.0}
+{"run_id": "ppo_GER40_cash_baseline", "generation": 29, "fitness_train": -0.0041, "fitness": -2.4845, "net_profit": 0.645, "max_drawdown": 2.7661, "sortino": -0.1817, "win_rate": 56.1966, "profit_factor": 2.5364, "nb_trades": 19.0}
+{"run_id": "ppo_GER40_cash_baseline", "generation": 39, "fitness_train": -0.0038, "fitness": -2.2458, "net_profit": 0.8837, "max_drawdown": 2.7661, "sortino": -0.1817, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0}

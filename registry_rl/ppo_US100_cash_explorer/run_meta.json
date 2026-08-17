@@ -1,0 +1,26 @@
+{
+  "run_id": "ppo_US100_cash_explorer",
+  "symbole": "US100.cash",
+  "algo": "ppo",
+  "duree_s": 160.4,
+  "nb_champions": 2,
+  "nb_records": 6,
+  "meilleur_holdout": 5.9889,
+  "config": {
+    "symbole": "US100.cash",
+    "timeframe": "m15",
+    "frac_train": 0.8,
+    "max_holdout": 1500,
+    "np_min_holdout": 0.0,
+    "dd_max_holdout": 5.0,
+    "seed": 0,
+    "id": "ppo_US100_cash_explorer",
+    "generations": 200,
+    "steps": 400000,
+    "segment": 512,
+    "nb_envs": 12,
+    "eval_holdout": 10,
+    "ent_coef": 0.05,
+    "largeur": 256
+  }
+}

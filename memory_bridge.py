@@ -146,7 +146,7 @@ def main():
         except Exception as e:
             log(f"❌ Erreur cycle: {e}")
         
-        time.sleep(300)  # toutes les 5 min
+        time.sleep(60)  # toutes les 5 min
 
 if __name__ == "__main__":
     main()

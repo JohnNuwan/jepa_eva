@@ -1,0 +1,1 @@
+{"run_id": "dqn_EURUSD_baseline", "pas": 200000, "fitness": -16.4924, "net_profit": -8.2502, "max_drawdown": 8.2819, "sortino": 0.0199, "win_rate": 17.6693, "profit_factor": 0.1753, "nb_trades": 247.0, "fichier": "champion_final.npz"}

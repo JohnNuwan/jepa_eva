@@ -117,14 +117,8 @@ def flux_marche_reel(longueur: int, symbole: str = "XAUUSD"):
             ref = clo[0, 0].clamp(min=0.0001)
             return torch.stack([ouv/ref, haut/ref, bas/ref, clo/ref, vol], dim=2).float()
     except Exception as e:
-        logging.getLogger("eva.main").warning("OHLCV reel indisponible - fallback: %s", e)
-    rendements = torch.randn(1, longueur) * 0.001
-    close = 50000.0 * torch.cumprod(1.0 + rendements, dim=1)
-    ouvert = torch.cat([close[:, :1], close[:, :-1]], dim=1)
-    amplitude = close * (torch.rand(1, longueur) * 0.002)
-    haut = torch.maximum(ouvert, close) + amplitude
-    bas = torch.minimum(ouvert, close) - amplitude
-    return torch.stack([ouvert, haut, bas, close, torch.ones_like(close) * 0.01], dim=2).float()
+        logging.getLogger("eva.main").warning("OHLCV reel indisponible - skip cycle: %s", e)
+    return None
 
 class OrchestrateurEVA:
     """Boucle maître : JEPA -> DLPack -> CEM -> Sanitizer -> Disjoncteur.
@@ -203,65 +197,56 @@ class OrchestrateurEVA:
         """Transmet l'ordre validé au MT5 Bridge."""
         self.etat.ordres_emis += 1
         
-        # Gestion intelligente des positions multiples
-        MAX_POS = 5  # max positions par symbole
-        DAILY_TARGET = 200.0  # objectif journalier en euros
-        
+        # Gestion intelligente via Waterfall (pattern DeepSeek Harness)
         try:
             positions = self.connecteur.positions()
-            pos_sym = [p for p in positions if p.get("symbol") == self.symbole]
-            buys = [p for p in pos_sym if p.get("type") == "BUY"]
-            sells = [p for p in pos_sym if p.get("type") == "SELL"]
-            existing = buys if ordre.direction > 0 else sells
-            
-            # Verifier limite de positions
-            if len(existing) >= MAX_POS:
-                journal.info("Max %d %s %s atteint - ordre ignore", MAX_POS, 
-                    "BUY" if ordre.direction > 0 else "SELL", self.symbole)
-                return
-            
-            # Position #2+ seulement si la 1ere est en profit
-            if len(existing) >= 1:
-                profit_total = sum(p.get("profit", 0) for p in existing)
-                if profit_total < 1.0:
-                    journal.info("Position #%d %s pas assez profitable (%.2f$) - attente",
-                        len(existing)+1, self.symbole, profit_total)
-                    return
-                journal.info("Position #%d %s autorisee (profit=%.2f$)", 
-                    len(existing)+1, self.symbole, profit_total)
-            
-            # Anti-hedge: verifie chaque position opposee individuellement
-            opposite = sells if ordre.direction > 0 else buys
-            for p_opp in opposite:
-                if p_opp.get("profit", 0) < 5.0:
-                    journal.info("Hedge bloque: position opposee %s non securisee (profit=%.2f$)",
-                        self.symbole, p_opp.get("profit", 0))
-                    return
-            
-        # Verifier le profit journalier total
-            try:
-                import urllib.request
-                req = urllib.request.Request("http://192.168.1.6:8765/history")
-                with urllib.request.urlopen(req, timeout=3) as r:
-                    hist = json.loads(r.read().decode())
-                today = datetime.now().strftime("%Y-%m-%d")
-                daily_profit = sum(d.get("profit", 0) for d in hist.get("deals", []) if today in d.get("close_time", ""))
-                
-                if daily_profit >= DAILY_TARGET:
-                    journal.info("Objectif %.0f$ atteint (%.2f$) - lots reduits a 0.02", 
-                        DAILY_TARGET, daily_profit)
-                    ordre = OrdreValide(ordre.direction, 0.02, 
-                        ordre.stop_loss, ordre.take_profit, ordre.conforme, ordre.raison)
-                elif daily_profit > 100 and ordre.lot > 0.02:
-                    journal.info("Profit journalier %.2f$ > 100$ - lot reduit de moitie", daily_profit)
-                    ordre = OrdreValide(ordre.direction, max(ordre.lot / 2, 0.02), 
-                        ordre.stop_loss, ordre.take_profit, ordre.conforme, ordre.raison)
-            except Exception as e:
-                journal.warning("Erreur verification daily P/L: %s", e)
-                
         except Exception as e:
-            journal.warning("Erreur verification positions: %s", e)
-        
+            journal.warning("Erreur positions: %s", e)
+            positions = []
+        pos_sym = [p for p in positions if p.get("symbol") == self.symbole]
+
+        # Charger l'état self-awareness pour les gardes de risque
+        etat_global = {}
+        try:
+            import os
+            sa_path = "/home/aza/eva-adam-v2/data/self_awareness_state.json"
+            if os.path.isfile(sa_path):
+                with open(sa_path) as _f:
+                    sa = json.load(_f)
+                rg = sa.get("regime", "")
+                if isinstance(rg, dict):
+                    rg = rg.get("regime", "")
+                etat_global["regime"] = rg
+                etat_global["pauses"] = sa.get("pauses", {}) or {}
+                pnl = sa.get("daily_pnl", 0.0)
+                if isinstance(pnl, (int, float)):
+                    etat_global["perte_jour"] = float(pnl)
+        except Exception as e:
+            journal.warning("Self-awareness state non lisible: %s", e)
+
+        from waterfall import CtxWaterfall, creer_waterfall_trading
+        ctx = CtxWaterfall(
+            symbole=self.symbole,
+            direction=ordre.direction,
+            lot=ordre.lot,
+            stop_loss=ordre.stop_loss,
+            take_profit=ordre.take_profit,
+            raison=ordre.raison,
+            positions=pos_sym,
+            etat_global=etat_global,
+        )
+        verdict = creer_waterfall_trading().run(ctx)
+        if not verdict.autorise:
+            journal.info("⛔ ORDRE BLOQUÉ %s %s (garde=%s) : %s",
+                "BUY" if ctx.direction > 0 else "SELL", self.symbole,
+                verdict.garde_bloquante, verdict.raison)
+            return
+        if ctx.modifs:
+            journal.info("⚡ Waterfall %s : %s", self.symbole, ctx.modifs)
+        if abs(ctx.lot - ordre.lot) > 1e-9:
+            ordre = OrdreValide(ordre.direction, ctx.lot,
+                ordre.stop_loss, ordre.take_profit, ordre.conforme, ordre.raison)
+
         # Ajuster SL/TP au prix actuel du marche
         try:
             tick = self.connecteur.tick(self.symbole)
@@ -270,9 +255,9 @@ class OrchestrateurEVA:
                 prix = tick.ask if est_achat else tick.bid
                 # Lots adaptes par symbole (risque ~0.3-0.5% par trade)
                 LOT_MAX_PAR_SYMBOLE = {
-                    "EURUSD": 0.10, "GBPUSD": 0.10, "USDJPY": 0.10,
-                    "US30.cash": 0.10, "US500.cash": 0.10, "US100.cash": 0.10,
-                    "XAUUSD": 0.05, "GER40.cash": 0.10
+    "EURUSD": 0.05, "GBPUSD": 0.05, "USDJPY": 0.05,
+                    "US30.cash": 0.05, "US500.cash": 0.05, "US100.cash": 0.05,
+                    "XAUUSD": 0.05, "GER40.cash": 0.05
                 }
                 lot = min(ordre.lot, LOT_MAX_PAR_SYMBOLE.get(self.symbole, 0.05))
                 SL_DIST = {
@@ -283,8 +268,10 @@ class OrchestrateurEVA:
                 }
                 dist_sl = SL_DIST.get(self.symbole, prix * 0.01)
                 dist_tp = dist_sl * 4  # 4x SL pour laisser le split se faire
-                sl = round(prix - dist_sl, 2) if est_achat else round(prix + dist_sl, 2)
-                tp = round(prix + dist_tp, 2) if est_achat else round(prix - dist_tp, 2)
+                # Precision adaptee au symbole (5 digits forex, 3 usdjpy, 2 indices)
+                digits = 5 if self.symbole in ["EURUSD", "GBPUSD", "GBPJPY", "EURJPY"] else (3 if self.symbole in ["USDJPY", "USDJPY.cash"] else 2)
+                sl = round(prix - dist_sl, digits) if est_achat else round(prix + dist_sl, digits)
+                tp = round(prix + dist_tp, digits) if est_achat else round(prix - dist_tp, digits)
                 ordre = OrdreValide(ordre.direction, lot, sl, tp, ordre.conforme, ordre.raison)
         except Exception as e:
             journal.warning("Erreur ajustement SL/TP: %s", e)
@@ -328,6 +315,10 @@ class OrchestrateurEVA:
             return
 
         ohlcv = flux_marche_reel(LONGUEUR_FENETRE, self.symbole)
+        if ohlcv is None:
+            journal.warning("Bridge MT5 indisponible — cycle ignoré")
+            self.etat.ticks += 1
+            return
         latents = self.pipeline.encoder(ohlcv)
         latent_dernier = latents[0, -1, :].contiguous()
         latent_jax = bridge_pytorch_to_jax(latent_dernier, self.device_jax)

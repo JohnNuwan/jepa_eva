@@ -224,7 +224,7 @@ def main():
         
         # 4. Sleep 1 hour between cycles
         log(f"  💤 Prochain cycle dans 1h...")
-        time.sleep(300)
+        time.sleep(60)
 
 if __name__ == "__main__":
     main()

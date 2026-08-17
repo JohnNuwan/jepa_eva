@@ -1,0 +1,35 @@
+{
+  "run_id": "US30_cash_r4v2_s789",
+  "symbole": "US30.cash",
+  "duree_s": 201.6,
+  "nb_champions": 1,
+  "nb_records": 1,
+  "meilleur_holdout": -Infinity,
+  "config": {
+    "symbole": "US30.cash",
+    "timeframe": "m15",
+    "generations": 750,
+    "segment": 768,
+    "taille_pop": 192,
+    "nb_elites": 32,
+    "taux_mutation": 0.15,
+    "sigma_mutation": 0.03,
+    "dim_cache": 256,
+    "dim_action": 8,
+    "cout_transaction": 0.0002,
+    "fitness": {
+      "sortino": 2.0,
+      "sharpe": 0.0,
+      "dd": 1.0,
+      "np": 1.0,
+      "pf": 0.0,
+      "wr": 0.0
+    },
+    "frac_train": 0.8,
+    "eval_holdout": 10,
+    "walkforward": 1,
+    "levier": 30.0,
+    "seed": 789,
+    "id": "US30_cash_r4v2_s789"
+  }
+}

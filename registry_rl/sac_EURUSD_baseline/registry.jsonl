@@ -1,0 +1,1 @@
+{"run_id": "sac_EURUSD_baseline", "pas": 200000, "fitness": -2.9944, "net_profit": -1.2515, "max_drawdown": 1.5025, "sortino": -0.1202, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 0.0, "fichier": "champion_final.npz"}

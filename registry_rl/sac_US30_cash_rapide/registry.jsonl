@@ -1,0 +1,2 @@
+{"run_id": "sac_US30_cash_rapide", "pas": 22500, "perte_critiques": 2e-05, "perte_politique": -0.71898, "alpha": 0.00025, "fitness": -0.5061, "net_profit": 0.0776, "max_drawdown": 0.3616, "sortino": -0.111, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 1.0, "fichier": "champion_p22500.npz"}
+{"run_id": "sac_US30_cash_rapide", "pas": 50000, "fitness": -0.5061, "net_profit": 0.0776, "max_drawdown": 0.3616, "sortino": -0.111, "win_rate": 0.0, "profit_factor": 0.0, "nb_trades": 1.0, "fichier": "champion_final.npz"}

@@ -1,0 +1,1 @@
+{"run_id": "US30_cash_r4v2_s789", "fold": "final", "generation": 750, "fitness_train": -9.580955505371094, "fitness": 19.0877, "net_profit": 42.7057, "drawdown": 23.7375, "sortino": 0.0598, "win_rate": 100.0, "profit_factor": 524434432.0, "nb_trades": 2.0, "fichier": "champion_final.npz"}

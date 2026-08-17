@@ -1,0 +1,3 @@
+{"run_id": "ppo_US500_cash_baseline", "generation": 29, "fitness_train": -0.004, "fitness": 0.3392, "net_profit": 0.7824, "max_drawdown": 0.3992, "sortino": -0.0221, "win_rate": 45.8539, "profit_factor": 1.4805, "nb_trades": 30.6667, "fichier": "champion_up29.npz"}
+{"run_id": "ppo_US500_cash_baseline", "generation": 39, "fitness_train": -0.0082, "fitness": 1.7816, "net_profit": 1.7796, "max_drawdown": 0.1273, "sortino": 0.0647, "win_rate": 58.1081, "profit_factor": 9.0057, "nb_trades": 13.3333, "fichier": "champion_up39.npz"}
+{"run_id": "ppo_US500_cash_baseline", "generation": 48, "fitness": 1.7816, "net_profit": 1.7796, "max_drawdown": 0.1273, "sortino": 0.0647, "win_rate": 58.1081, "profit_factor": 9.0057, "nb_trades": 13.3333, "fichier": "champion_final.npz"}

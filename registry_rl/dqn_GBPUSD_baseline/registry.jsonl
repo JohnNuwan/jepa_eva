@@ -1,0 +1,1 @@
+{"run_id": "dqn_GBPUSD_baseline", "pas": 200000, "fitness": -18.1218, "net_profit": -8.8101, "max_drawdown": 8.8231, "sortino": -0.2443, "win_rate": 22.1593, "profit_factor": 0.2083, "nb_trades": 229.0, "fichier": "champion_final.npz"}

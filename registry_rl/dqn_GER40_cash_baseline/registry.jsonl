@@ -1,0 +1,2 @@
+{"run_id": "dqn_GER40_cash_baseline", "pas": 25000, "eps": 0.02, "perte": 0.0, "fitness": 0.0188, "net_profit": 0.0869, "max_drawdown": 0.0681, "sortino": 0.0, "win_rate": 33.3333, "profit_factor": 0.0, "nb_trades": 0.3333, "fichier": "champion_p25000.npz"}
+{"run_id": "dqn_GER40_cash_baseline", "pas": 200000, "fitness": 0.0188, "net_profit": 0.0869, "max_drawdown": 0.0681, "sortino": 0.0, "win_rate": 33.3333, "profit_factor": 0.0, "nb_trades": 0.3333, "fichier": "champion_final.npz"}

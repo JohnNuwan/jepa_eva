@@ -1,0 +1,31 @@
+{
+  "lessons": [
+    {
+      "agent": "system",
+      "lesson": "Integration R4v2 FTMO champions from Bee: 7 symboles, 14 champions, meilleurs holdout US100=158.6 GBPUSD=10.9. Paper trading relance sur GPU 1.",
+      "context": "Cron integration R4: champions_selection.json mis a jour, paper_champions/ alimente, paper_trading_mt5.py --gpu relance avec les 20 champions",
+      "timestamp": "2026-08-17T14:38:52.974641",
+      "mission_type": "Integration"
+    },
+    {
+      "agent": "hermes-cron",
+      "lesson": "R4 FTMO verified Aug 17: 7 symbols have champions on Bee. champions_selection.json regenerated (1170 entries). 36 .npz in paper_champions. R4v2 weak (0-2 trades most), only USDJPY passes filter. Paper trading already running R4. Not deployed live."
+    },
+    {
+      "timestamp": "2026-08-17T20:33:00",
+      "agent": "hermes-cron",
+      "type": "r4v2_integration",
+      "summary": "R4v2 FTMO integration: 7/7 symbols. Only USDJPY_r4v2_s42_g9 passed filter (fitness=3.2). champions_selection.json updated, paper_champions/ populated, Postgres logged.",
+      "symbols_ready": [
+        "EURUSD",
+        "GBPUSD",
+        "USDJPY",
+        "XAUUSD",
+        "US30.cash",
+        "US100.cash",
+        "GER40.cash"
+      ],
+      "action": "Updated selection, populated paper_champions, logged to PG"
+    }
+  ]
+}

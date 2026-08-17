@@ -1,0 +1,1 @@
+{"run_id": "USDJPY_r4v2_s789", "fold": "final", "generation": 750, "fitness_train": -90.27626037597656, "fitness": -94.0243, "net_profit": -46.1537, "drawdown": 47.751, "sortino": -0.0597, "win_rate": 27.2727, "profit_factor": 0.0974, "nb_trades": 11.0, "fichier": "champion_final.npz"}

@@ -1,0 +1,4 @@
+{"run_id": "ppo_SOLUSDT_baseline", "generation": 9, "fitness_train": -0.0044, "fitness": 5.6468, "net_profit": 5.8442, "max_drawdown": 0.3049, "sortino": 0.0538, "win_rate": 67.4242, "profit_factor": 40.9333, "nb_trades": 17.3333}
+{"run_id": "ppo_SOLUSDT_baseline", "generation": 19, "fitness_train": -0.003, "fitness": 2.5359, "net_profit": 2.8625, "max_drawdown": 0.4341, "sortino": 0.0538, "win_rate": 57.1816, "profit_factor": 1.8569, "nb_trades": 31.3333}
+{"run_id": "ppo_SOLUSDT_baseline", "generation": 29, "fitness_train": -0.002, "fitness": 4.6668, "net_profit": 4.8642, "max_drawdown": 0.3049, "sortino": 0.0538, "win_rate": 62.8205, "profit_factor": 5.6209, "nb_trades": 5.3333}
+{"run_id": "ppo_SOLUSDT_baseline", "generation": 39, "fitness_train": -0.0019, "fitness": 4.284, "net_profit": 4.4814, "max_drawdown": 0.3049, "sortino": 0.0538, "win_rate": 85.0, "profit_factor": 25.8064, "nb_trades": 4.0}

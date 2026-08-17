@@ -1,0 +1,1 @@
+{"run_id": "dqn_US100_cash_rapide", "pas": 50000, "fitness": -11.1866, "net_profit": -5.0739, "max_drawdown": 5.6077, "sortino": -0.2525, "win_rate": 29.4444, "profit_factor": 0.2065, "nb_trades": 17.0, "fichier": "champion_final.npz"}

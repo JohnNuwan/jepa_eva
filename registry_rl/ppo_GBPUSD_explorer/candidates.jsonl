@@ -1,0 +1,6 @@
+{"run_id": "ppo_GBPUSD_explorer", "generation": 9, "fitness_train": -0.0064, "fitness": -2.3687, "net_profit": -1.1844, "max_drawdown": 1.1844, "sortino": 0.0, "win_rate": 21.5054, "profit_factor": 0.1362, "nb_trades": 32.0}
+{"run_id": "ppo_GBPUSD_explorer", "generation": 19, "fitness_train": -0.0058, "fitness": -3.0921, "net_profit": -0.9619, "max_drawdown": 1.6304, "sortino": -0.2499, "win_rate": 29.0663, "profit_factor": 0.7067, "nb_trades": 52.3333}
+{"run_id": "ppo_GBPUSD_explorer", "generation": 29, "fitness_train": -0.0075, "fitness": -1.8967, "net_profit": -0.4982, "max_drawdown": 1.3985, "sortino": 0.0, "win_rate": 49.6032, "profit_factor": 0.3806, "nb_trades": 14.0}
+{"run_id": "ppo_GBPUSD_explorer", "generation": 39, "fitness_train": -0.0089, "fitness": 0.0322, "net_profit": 0.7698, "max_drawdown": 0.7936, "sortino": 0.028, "win_rate": 36.7647, "profit_factor": 1.6131, "nb_trades": 16.3333}
+{"run_id": "ppo_GBPUSD_explorer", "generation": 49, "fitness_train": -0.0088, "fitness": 0.5764, "net_profit": 0.9602, "max_drawdown": 0.3838, "sortino": 0.0, "win_rate": 44.4444, "profit_factor": 9.8076, "nb_trades": 4.0}
+{"run_id": "ppo_GBPUSD_explorer", "generation": 59, "fitness_train": -0.0083, "fitness": -1.6072, "net_profit": -0.6753, "max_drawdown": 0.9318, "sortino": 0.0, "win_rate": 11.1111, "profit_factor": 0.0878, "nb_trades": 2.3333}

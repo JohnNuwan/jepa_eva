@@ -1,0 +1,1 @@
+{"run_id": "ppo_GER40_cash_quick", "generation": 48, "fitness": -13.2478, "net_profit": -6.1319, "max_drawdown": 7.1958, "sortino": 0.04, "win_rate": 31.3261, "profit_factor": 0.5466, "nb_trades": 106.3333, "fichier": "champion_final.npz"}

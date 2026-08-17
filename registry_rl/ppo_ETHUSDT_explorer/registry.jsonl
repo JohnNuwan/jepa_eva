@@ -1,0 +1,2 @@
+{"run_id": "ppo_ETHUSDT_explorer", "generation": 29, "fitness_train": -0.0018, "fitness": -1.1408, "net_profit": 0.6919, "max_drawdown": 1.9508, "sortino": 0.059, "win_rate": 44.246, "profit_factor": 1.3488, "nb_trades": 16.6667, "fichier": "champion_up29.npz"}
+{"run_id": "ppo_ETHUSDT_explorer", "generation": 65, "fitness": -1.1408, "net_profit": 0.6919, "max_drawdown": 1.9508, "sortino": 0.059, "win_rate": 44.246, "profit_factor": 1.3488, "nb_trades": 16.6667, "fichier": "champion_final.npz"}

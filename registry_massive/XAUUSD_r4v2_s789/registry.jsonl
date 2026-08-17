@@ -1,0 +1,1 @@
+{"run_id": "XAUUSD_r4v2_s789", "fold": "final", "generation": 750, "fitness_train": -171.39511108398438, "fitness": -179.1924, "net_profit": -88.5702, "drawdown": 90.3367, "sortino": -0.1428, "win_rate": 25.0, "profit_factor": 0.2654, "nb_trades": 40.0, "fichier": "champion_final.npz"}

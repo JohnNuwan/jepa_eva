@@ -1,0 +1,2 @@
+{"run_id": "ppo_BTCUSDT_explorer", "generation": 59, "fitness_train": -0.006, "fitness": 3.3575, "net_profit": 2.4465, "max_drawdown": 0.1695, "sortino": 0.5402, "win_rate": 33.3333, "profit_factor": 1.9183, "nb_trades": 3.0, "fichier": "champion_up59.npz"}
+{"run_id": "ppo_BTCUSDT_explorer", "generation": 65, "fitness": 3.3575, "net_profit": 2.4465, "max_drawdown": 0.1695, "sortino": 0.5402, "win_rate": 33.3333, "profit_factor": 1.9183, "nb_trades": 3.0, "fichier": "champion_final.npz"}
